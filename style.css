@@ -1,0 +1,128 @@
+/* === Globals & Theming === */
+:root {
+    --font-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --border-radius-sm: 4px;
+    --border-radius-md: 6px;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 20px;
+    --spacing-xxl: 24px;
+    --transition-fast: 0.15s;
+    --transition-norm: 0.25s;
+    --animation-duration: 0.3s;
+
+    /* Light Theme */
+    --bg-l: #ffffff; --text-l: #1f2937; --text-secondary-l: #6b7280; --accent-l: #3b82f6; --accent-hover-l: #2563eb; --accent-text-l: #ffffff; --border-l: #e5e7eb; --card-bg-l: #f9fafb; --danger-l: #ef4444; --danger-hover-l: #dc2626; --shadow-color-l: rgba(0, 0, 0, 0.1); --focus-ring-l: rgba(59, 130, 246, 0.3);
+
+    /* Dark Theme */
+    --bg-d: #111827; --text-d: #e5e7eb; --text-secondary-d: #9ca3af; --accent-d: #60a5fa; --accent-hover-d: #3b82f6; --accent-text-d: #111827; --border-d: #374151; --card-bg-d: #1f2937; --danger-d: #f87171; --danger-hover-d: #ef4444; --shadow-color-d: rgba(0, 0, 0, 0.4); --focus-ring-d: rgba(96, 165, 250, 0.4);
+
+    /* Default to Light */
+    --bg: var(--bg-l); --text: var(--text-l); --text-secondary: var(--text-secondary-l); --accent: var(--accent-l); --accent-hover: var(--accent-hover-l); --accent-text: var(--accent-text-l); --border: var(--border-l); --card-bg: var(--card-bg-l); --danger: var(--danger-l); --danger-hover: var(--danger-hover-l); --shadow-color: var(--shadow-color-l); --focus-ring: var(--focus-ring-l);
+}
+
+body.dark-mode {
+    --bg: var(--bg-d); --text: var(--text-d); --text-secondary: var(--text-secondary-d); --accent: var(--accent-d); --accent-hover: var(--accent-hover-d); --accent-text: var(--accent-text-d); --border: var(--border-d); --card-bg: var(--card-bg-d); --danger: var(--danger-d); --danger-hover: var(--danger-hover-d); --shadow-color: var(--shadow-color-d); --focus-ring: var(--focus-ring-d);
+}
+
+/* === Base Styles === */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+    font-family: var(--font-primary); margin: 0; background-color: var(--bg); color: var(--text); line-height: 1.6; font-size: 16px; /* Base size */ transition: background-color var(--transition-norm) ease, color var(--transition-norm) ease; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.app-main { font-size: inherit; /* Allow font size changes */ }
+
+/* === Layout === */
+.app-main { max-width: 800px; margin: 0 auto; padding: var(--spacing-xl); }
+.app-header { background-color: var(--card-bg); padding: var(--spacing-md) 0; border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px 0 var(--shadow-color); position: sticky; top: 0; z-index: 100; }
+.header-content { max-width: 800px; margin: 0 auto; padding: 0 var(--spacing-xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); }
+.app-footer { text-align: center; margin-top: var(--spacing-xxl); padding: var(--spacing-xl); color: var(--text-secondary); font-size: 0.9em; border-top: 1px solid var(--border); }
+hr { border: none; border-top: 1px solid var(--border); margin: var(--spacing-xxl) 0; }
+
+/* === Header Controls === */
+.app-header h1 { margin: 0; font-size: 1.5em; color: var(--text); }
+.controls { display: flex; align-items: center; gap: var(--spacing-sm); }
+.font-controls { display: flex; align-items: center; gap: var(--spacing-xs); background: var(--bg); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-md); border: 1px solid var(--border); }
+.font-controls span { font-size: 0.9em; min-width: 20px; text-align: center; color: var(--text-secondary); }
+.font-controls button { padding: 2px 6px; min-width: 25px; margin: 0; } /* Reset margins */
+#theme-toggle-btn { padding: 6px; width: 34px; height: 34px; line-height: 1; font-size: 1.1em; border-radius: 50%; }
+
+/* === Animations === */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUpIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === View Management === */
+.view { display: none; margin-top: var(--spacing-xxl); }
+.view.active { display: block; animation: fadeIn var(--animation-duration) ease-out; }
+.view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-md); }
+.view-header h2, .view-header h3 { margin: 0; color: var(--text); font-size: 1.6em; border-bottom: none; }
+.view-header h3 { font-size: 1.4em; }
+
+/* === Buttons === */
+button, .import-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-lg); background-color: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--border-radius-md); cursor: pointer; font-size: 0.95em; font-weight: 500; text-align: center; transition: all var(--transition-fast) ease-out; }
+button:hover, .import-button:hover { border-color: var(--accent); background-color: var(--card-bg); color: var(--accent); transform: translateY(-1px); box-shadow: 0 2px 4px -1px var(--shadow-color); }
+button:active, .import-button:active { transform: translateY(0px) scale(0.98); box-shadow: none; }
+button:disabled, .import-button:disabled { opacity: 0.6; cursor: not-allowed; }
+button.primary-action { background-color: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+button.primary-action:hover { background-color: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-text); }
+button.danger { background-color: var(--danger); color: white; border-color: var(--danger); }
+button.danger:hover { background-color: var(--danger-hover); border-color: var(--danger-hover); color: white; }
+.back-btn, .cancel-form-btn { background: none; border: none; color: var(--accent); padding: var(--spacing-xs) 0; font-size: 0.95em; font-weight: 500; margin-bottom: var(--spacing-lg); box-shadow: none; }
+.back-btn:hover, .cancel-form-btn:hover { text-decoration: underline; color: var(--accent-hover); background: none; transform: none; box-shadow: none;}
+button.small-btn { padding: var(--spacing-xs) var(--spacing-md); font-size: 0.9em; }
+.continue-reading-area { text-align: left; margin-bottom: var(--spacing-lg); }
+.continue-reading-area button { animation: fadeIn var(--animation-duration) ease-out; }
+
+/* === Cards & Lists === */
+.card { background-color: var(--card-bg); border-radius: var(--border-radius-md); border: 1px solid var(--border); padding: var(--spacing-xl); box-shadow: 0 1px 2px 0 var(--shadow-color); margin-bottom: var(--spacing-lg); }
+.card-list { list-style: none; padding: 0; margin: 0; }
+.card-list li {
+    background-color: var(--card-bg); border-radius: var(--border-radius-md); border: 1px solid var(--border);
+    padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md); display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; transition: all var(--transition-norm) ease; box-shadow: 0 1px 2px 0 var(--shadow-color);
+    /* Apply animation - reset opacity if needed */
+    animation: slideUpIn var(--animation-duration) ease-out forwards; opacity: 0;
+}
+/* Stagger animation delay - requires JS to add style or class */
+/* .card-list li:nth-child(1) { animation-delay: 0.05s; } ... etc ... */
+
+.card-list li:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 4px 6px -1px var(--shadow-color); border-color: var(--accent); }
+.list-item-actions { display: flex; gap: var(--spacing-sm); margin-left: var(--spacing-lg); }
+.list-item-actions button { padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.9em; }
+li.placeholder { color: var(--text-secondary); cursor: default; text-align: center; padding: var(--spacing-xl); font-style: italic; box-shadow: none; border: 1px dashed var(--border); animation: none; opacity: 1; }
+li.placeholder:hover { transform: none; box-shadow: none; border-color: var(--border); }
+.card-list li.last-read { border-left: 4px solid var(--accent); padding-left: calc(var(--spacing-lg) - 4px); /* Adjust for border */ font-weight: 500; }
+.card-list li.last-read a { font-weight: 600; }
+
+/* === Forms === */
+form.card { padding: var(--spacing-xl); }
+form div { margin-bottom: var(--spacing-lg); } /* Add spacing between form groups */
+form label { display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: 0.9em; color: var(--text); }
+form input[type="text"], form textarea {
+    width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--border-radius-md);
+    box-sizing: border-box; background-color: var(--bg); color: var(--text); font-size: 1em;
+    font-family: inherit; /* Ensure font consistency */
+    transition: border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+}
+form input[type="text"]:focus, form textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus-ring); }
+form textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+.form-actions { margin-top: var(--spacing-xl); display: flex; justify-content: flex-end; gap: var(--spacing-md); }
+
+/* === Specific View Styles === */
+.novel-meta p { margin-bottom: var(--spacing-sm); }
+.novel-meta p strong { color: var(--text); }
+.description-content { margin-top: var(--spacing-sm); line-height: 1.7; white-space: pre-wrap; color: var(--text-secondary); font-family: inherit; }
+.detail-actions { display: flex; gap: var(--spacing-md); }
+.readable-content { font-size: inherit; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; }
+#read-chapter-content-div { font-family: inherit; padding: var(--spacing-lg); } /* Add padding inside card */
+
+/* === Error Box === */
+.error-box {
+    background-color: #fee; color: #a00; border: 1px solid #fdd;
+    padding: var(--spacing-lg); margin-bottom: var(--spacing-xl); border-radius: var(--border-radius-md);
+}
+body.dark-mode .error-box {
+    background-color: #3e1a1a; color: #ffbaba; border: 1px solid #5c2a2a;
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel Reader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="header-content">
+            <h1>My Novel Library</h1>
+            <div class="controls">
+                <button id="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle Theme">🌓</button>
+                <div class="font-controls">
+                    <button id="font-decrease-btn" title="Decrease Font Size" aria-label="Decrease Font Size">-A</button>
+                    <span id="font-size-display" aria-live="polite">16</span>px
+                    <button id="font-increase-btn" title="Increase Font Size" aria-label="Increase Font Size">+A</button>
+                </div>
+                <button id="export-data-btn" title="Export Backup">Export</button>
+                <label class="import-button" title="Import Backup">
+                    Import
+                    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-container" class="app-main">
+
+        <div id="error-display" class="error-box" hidden></div>
+
+        <div id="view-novel-list" class="view active" data-view-id="novel-list">
+            <div class="view-header">
+                <h2>Novels</h2>
+                <button id="add-novel-show-form-btn" class="primary-action">Add Novel</button>
+            </div>
+            <ul id="novel-list-ul" class="card-list">
+                <li class="placeholder">Loading...</li>
+            </ul>
+        </div>
+
+        <div id="view-novel-detail" class="view" data-view-id="novel-detail">
+            <button class="back-btn" data-target-view="novel-list">← Back to List</button>
+            <div class="view-header">
+                <h2 id="detail-novel-title-h2">Novel Title</h2>
+                <div class="detail-actions">
+                    <button id="edit-novel-show-form-btn">Edit Info</button>
+                    <button id="delete-novel-btn" class="danger">Delete Novel</button>
+                </div>
+            </div>
+            <div class="novel-meta card">
+                <p><strong>Author:</strong> <span id="detail-novel-author-span"></span></p>
+                <p><strong>Genre:</strong> <span id="detail-novel-genre-span"></span></p>
+                <p><strong>Description:</strong></p>
+                <div id="detail-novel-description-div" class="description-content"></div>
+            </div>
+            <hr>
+            <div class="view-header">
+                <h3>Chapters</h3>
+                <button id="add-chapter-show-form-btn" class="primary-action">Add Chapter</button>
+            </div>
+            <div id="continue-reading-container-div" class="continue-reading-area">
+            </div>
+            <ul id="chapter-list-ul" class="card-list">
+                <li class="placeholder">Loading...</li>
+            </ul>
+        </div>
+
+        <div id="view-chapter-read" class="view" data-view-id="chapter-read">
+            <button class="back-btn" data-target-view="novel-detail">← Back to Novel</button>
+            <h2 id="read-chapter-title-h2">Chapter Title</h2>
+            <div class="card readable-content">
+                <div id="read-chapter-content-div">
+                </div>
+            </div>
+        </div>
+
+        <div id="view-novel-form" class="view" data-view-id="novel-form">
+            <button class="cancel-form-btn" id="cancel-novel-form-btn">Cancel</button>
+            <h2 id="novel-form-title-h2">Add/Edit Novel</h2>
+            <form id="novel-form-element" class="card">
+                <input type="hidden" id="novel-form-edit-id">
+                <div>
+                    <label for="novel-form-title-input">Title:</label>
+                    <input type="text" id="novel-form-title-input" required>
+                </div>
+                <div>
+                    <label for="novel-form-author-input">Author:</label>
+                    <input type="text" id="novel-form-author-input">
+                </div>
+                <div>
+                    <label for="novel-form-genre-input">Genre:</label>
+                    <input type="text" id="novel-form-genre-input">
+                </div>
+                <div>
+                    <label for="novel-form-description-textarea">Description:</label>
+                    <textarea id="novel-form-description-textarea" rows="6"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="novel-form-save-btn" class="primary-action">Save Novel</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="view-chapter-form" class="view" data-view-id="chapter-form">
+            <button class="cancel-form-btn" id="cancel-chapter-form-btn">Cancel</button>
+            <h2 id="chapter-form-title-h2">Add/Edit Chapter</h2>
+            <form id="chapter-form-element" class="card">
+                <input type="hidden" id="chapter-form-edit-id">
+                <input type="hidden" id="chapter-form-novel-id-input">
+                <div>
+                    <label for="chapter-form-title-input">Chapter Title:</label>
+                    <input type="text" id="chapter-form-title-input" required>
+                </div>
+                <div>
+                    <label for="chapter-form-content-textarea">Content:</label>
+                    <textarea id="chapter-form-content-textarea" rows="15" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="chapter-form-save-btn" class="primary-action">Save Chapter</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+
+    <footer class="app-footer">
+        Simple Novel Reader
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
