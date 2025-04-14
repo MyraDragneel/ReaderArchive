@@ -1,128 +1,471 @@
 /* === Globals & Theming === */
 :root {
     --font-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --font-monospace: 'Courier New', Courier, monospace; /* Added for potential future use */
     --border-radius-sm: 4px;
-    --border-radius-md: 6px;
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 12px;
-    --spacing-lg: 16px;
-    --spacing-xl: 20px;
-    --spacing-xxl: 24px;
-    --transition-fast: 0.15s;
-    --transition-norm: 0.25s;
+    --border-radius-md: 8px; /* Slightly increased */
+    --spacing-xs: 0.25rem;  /* 4px */
+    --spacing-sm: 0.5rem;   /* 8px */
+    --spacing-md: 0.75rem;  /* 12px */
+    --spacing-lg: 1rem;     /* 16px */
+    --spacing-xl: 1.25rem;  /* 20px */
+    --spacing-xxl: 1.5rem; /* 24px */
+
+    --transition-fast: 0.15s ease-out;
+    --transition-norm: 0.25s ease-out;
     --animation-duration: 0.3s;
 
+    /* Button specific */
+    --btn-padding-y: var(--spacing-sm);
+    --btn-padding-x: var(--spacing-lg);
+    --btn-sm-padding-y: var(--spacing-xs);
+    --btn-sm-padding-x: var(--spacing-md);
+    --btn-line-height: 1.5; /* Unified line height */
+
     /* Light Theme */
-    --bg-l: #ffffff; --text-l: #1f2937; --text-secondary-l: #6b7280; --accent-l: #3b82f6; --accent-hover-l: #2563eb; --accent-text-l: #ffffff; --border-l: #e5e7eb; --card-bg-l: #f9fafb; --danger-l: #ef4444; --danger-hover-l: #dc2626; --shadow-color-l: rgba(0, 0, 0, 0.1); --focus-ring-l: rgba(59, 130, 246, 0.3);
+    --bg-l: #ffffff;
+    --text-l: #1f2937; /* Gray 800 */
+    --text-secondary-l: #6b7280; /* Gray 500 */
+    --accent-l: #3b82f6; /* Blue 500 */
+    --accent-hover-l: #2563eb; /* Blue 600 */
+    --accent-text-l: #ffffff;
+    --border-l: #e5e7eb; /* Gray 200 */
+    --card-bg-l: #f9fafb; /* Gray 50 */
+    --danger-l: #ef4444; /* Red 500 */
+    --danger-hover-l: #dc2626; /* Red 600 */
+    --shadow-color-l: rgba(107, 114, 128, 0.15); /* Gray 500 with alpha */
+    --focus-ring-l: rgba(59, 130, 246, 0.4); /* Blue 500 with alpha */
 
     /* Dark Theme */
-    --bg-d: #111827; --text-d: #e5e7eb; --text-secondary-d: #9ca3af; --accent-d: #60a5fa; --accent-hover-d: #3b82f6; --accent-text-d: #111827; --border-d: #374151; --card-bg-d: #1f2937; --danger-d: #f87171; --danger-hover-d: #ef4444; --shadow-color-d: rgba(0, 0, 0, 0.4); --focus-ring-d: rgba(96, 165, 250, 0.4);
+    --bg-d: #111827; /* Gray 900 */
+    --text-d: #e5e7eb; /* Gray 100 */
+    --text-secondary-d: #9ca3af; /* Gray 400 */
+    --accent-d: #60a5fa; /* Blue 400 */
+    --accent-hover-d: #3b82f6; /* Blue 500 */
+    --accent-text-d: #111827; /* Gray 900 */
+    --border-d: #374151; /* Gray 700 */
+    --card-bg-d: #1f2937; /* Gray 800 */
+    --danger-d: #f87171; /* Red 400 */
+    --danger-hover-d: #ef4444; /* Red 500 */
+    --shadow-color-d: rgba(0, 0, 0, 0.3);
+    --focus-ring-d: rgba(96, 165, 250, 0.5); /* Blue 400 with alpha */
 
-    /* Default to Light */
-    --bg: var(--bg-l); --text: var(--text-l); --text-secondary: var(--text-secondary-l); --accent: var(--accent-l); --accent-hover: var(--accent-hover-l); --accent-text: var(--accent-text-l); --border: var(--border-l); --card-bg: var(--card-bg-l); --danger: var(--danger-l); --danger-hover: var(--danger-hover-l); --shadow-color: var(--shadow-color-l); --focus-ring: var(--focus-ring-l);
+    /* Assign default theme */
+    --bg: var(--bg-l); --text: var(--text-l); --text-secondary: var(--text-secondary-l);
+    --accent: var(--accent-l); --accent-hover: var(--accent-hover-l); --accent-text: var(--accent-text-l);
+    --border: var(--border-l); --card-bg: var(--card-bg-l);
+    --danger: var(--danger-l); --danger-hover: var(--danger-hover-l);
+    --shadow-color: var(--shadow-color-l); --focus-ring: var(--focus-ring-l);
 }
 
 body.dark-mode {
-    --bg: var(--bg-d); --text: var(--text-d); --text-secondary: var(--text-secondary-d); --accent: var(--accent-d); --accent-hover: var(--accent-hover-d); --accent-text: var(--accent-text-d); --border: var(--border-d); --card-bg: var(--card-bg-d); --danger: var(--danger-d); --danger-hover: var(--danger-hover-d); --shadow-color: var(--shadow-color-d); --focus-ring: var(--focus-ring-d);
+    --bg: var(--bg-d); --text: var(--text-d); --text-secondary: var(--text-secondary-d);
+    --accent: var(--accent-d); --accent-hover: var(--accent-hover-d); --accent-text: var(--accent-text-d);
+    --border: var(--border-d); --card-bg: var(--card-bg-d);
+    --danger: var(--danger-d); --danger-hover: var(--danger-hover-d);
+    --shadow-color: var(--shadow-color-d); --focus-ring: var(--focus-ring-d);
 }
 
 /* === Base Styles === */
 *, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 100%; /* 16px base */ }
+
 body {
-    font-family: var(--font-primary); margin: 0; background-color: var(--bg); color: var(--text); line-height: 1.6; font-size: 16px; /* Base size */ transition: background-color var(--transition-norm) ease, color var(--transition-norm) ease; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-primary);
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6; /* Improved default line height */
+    font-size: 1rem; /* Use rem for base font size */
+    transition: background-color var(--transition-norm), color var(--transition-norm);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden; /* Prevent horizontal scroll on body */
+    overflow-wrap: break-word; /* Global setting for breaking long words */
+    word-wrap: break-word; /* Older fallback for overflow-wrap */
+    word-break: break-word; /* More aggressive word breaking if needed, useful as a fallback */
 }
-.app-main { font-size: inherit; /* Allow font size changes */ }
+.app-main { font-size: inherit; /* Allows font size changes via JS */ }
 
 /* === Layout === */
-.app-main { max-width: 800px; margin: 0 auto; padding: var(--spacing-xl); }
-.app-header { background-color: var(--card-bg); padding: var(--spacing-md) 0; border-bottom: 1px solid var(--border); box-shadow: 0 1px 3px 0 var(--shadow-color); position: sticky; top: 0; z-index: 100; }
-.header-content { max-width: 800px; margin: 0 auto; padding: 0 var(--spacing-xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--spacing-md); }
-.app-footer { text-align: center; margin-top: var(--spacing-xxl); padding: var(--spacing-xl); color: var(--text-secondary); font-size: 0.9em; border-top: 1px solid var(--border); }
-hr { border: none; border-top: 1px solid var(--border); margin: var(--spacing-xxl) 0; }
+.app-main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-xl);
+    width: 100%; /* Ensure it takes full width up to max-width */
+}
+.app-header {
+    background-color: var(--card-bg);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 4px -1px var(--shadow-color); /* Slightly softer shadow */
+    position: sticky; top: 0; z-index: 100;
+    transition: background-color var(--transition-norm), border-color var(--transition-norm);
+}
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: var(--spacing-lg); /* Increased gap */
+}
+.app-footer {
+    text-align: center;
+    margin-top: var(--spacing-xxl);
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border);
+    transition: border-color var(--transition-norm);
+}
+hr { border: none; border-top: 1px solid var(--border); margin: var(--spacing-xxl) 0; transition: border-color var(--transition-norm); }
 
 /* === Header Controls === */
-.app-header h1 { margin: 0; font-size: 1.5em; color: var(--text); }
-.controls { display: flex; align-items: center; gap: var(--spacing-sm); }
-.font-controls { display: flex; align-items: center; gap: var(--spacing-xs); background: var(--bg); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-md); border: 1px solid var(--border); }
-.font-controls span { font-size: 0.9em; min-width: 20px; text-align: center; color: var(--text-secondary); }
-.font-controls button { padding: 2px 6px; min-width: 25px; margin: 0; } /* Reset margins */
-#theme-toggle-btn { padding: 6px; width: 34px; height: 34px; line-height: 1; font-size: 1.1em; border-radius: 50%; }
+.app-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0; /* Prevent title from shrinking too much */
+    overflow-wrap: break-word; /* Ensure header title wraps */
+    word-break: break-word;
+    min-width: 0; /* Allow shrinking if needed in flex context */
+}
+.controls { display: flex; align-items: center; flex-wrap: wrap; /* Allow controls to wrap */ gap: var(--spacing-md); /* Increased gap slightly */ justify-content: flex-end; /* Align to end on larger screens */ flex-grow: 1; }
+.font-controls { display: flex; align-items: center; gap: var(--spacing-xs); background: var(--bg); padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-md); border: 1px solid var(--border); transition: background-color var(--transition-norm), border-color var(--transition-norm); }
+.font-controls span { font-size: 0.9rem; min-width: 24px; /* Slightly wider */ text-align: center; color: var(--text-secondary); }
+/* Specific styling for font buttons */
+.font-controls button { padding: 2px 6px; min-width: 28px; margin: 0; font-size: 1rem; background: none; border: none; }
+.font-controls button:hover { background-color: var(--border); }
+#theme-toggle-btn { padding: var(--spacing-sm); /* Use variable */ width: auto; height: auto; /* Let padding define size */ line-height: 1; font-size: 1.1rem; border-radius: var(border-radius-md); border: 1px solid transparent; /* Add border for consistent size */ }
+#theme-toggle-btn:hover { border-color: var(--border); background-color: var(--border); }
+
+/* Ensure consistent Export/Import button appearance */
+#export-data-btn, .import-button {
+    /* Inherit from base button style below */
+    vertical-align: middle;
+}
+.import-button { /* Label specific */
+    display: inline-flex; /* Match button display */
+    align-items: center;
+}
+
+/* Improved Focus Styles */
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, .import-button:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
 
 /* === Animations === */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUpIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUpIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* === View Management === */
-.view { display: none; margin-top: var(--spacing-xxl); }
+.view { display: none; margin-top: var(--spacing-lg); /* Reduced top margin slightly */ }
 .view.active { display: block; animation: fadeIn var(--animation-duration) ease-out; }
 .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: var(--spacing-md); }
-.view-header h2, .view-header h3 { margin: 0; color: var(--text); font-size: 1.6em; border-bottom: none; }
-.view-header h3 { font-size: 1.4em; }
+.view-header h2, .view-header h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.75rem; /* Larger headings */
+    font-weight: 600;
+    border-bottom: none;
+    overflow-wrap: break-word; /* Ensure view headers wrap */
+    word-break: break-word;
+    min-width: 0; /* Allow shrinking in flex */
+}
+.view-header h3 { font-size: 1.5rem; } /* Slightly smaller sub-heading */
+.chapter-actions { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
 
-/* === Buttons === */
-button, .import-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-lg); background-color: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--border-radius-md); cursor: pointer; font-size: 0.95em; font-weight: 500; text-align: center; transition: all var(--transition-fast) ease-out; }
-button:hover, .import-button:hover { border-color: var(--accent); background-color: var(--card-bg); color: var(--accent); transform: translateY(-1px); box-shadow: 0 2px 4px -1px var(--shadow-color); }
-button:active, .import-button:active { transform: translateY(0px) scale(0.98); box-shadow: none; }
-button:disabled, .import-button:disabled { opacity: 0.6; cursor: not-allowed; }
+/* === Buttons === (Base styles for all buttons & import label) */
+button, .import-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--btn-padding-y) var(--btn-padding-x); /* Use variables */
+    background-color: var(--card-bg); /* Use card bg as base */
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 0.95rem; /* Base font size */
+    font-weight: 500; text-align: center;
+    line-height: var(--btn-line-height); /* Use variable */
+    box-sizing: border-box;
+    transition: all var(--transition-fast); /* Faster transition */
+    box-shadow: 0 1px 2px 0 var(--shadow-color); /* Subtle shadow */
+    vertical-align: middle; /* Ensure proper alignment */
+
+    /* *** ADDED/MODIFIED: Default single-line overflow handling for ALL buttons *** */
+    /* Apply this carefully - might not be suitable if multi-line button text is needed. */
+    /* Consider applying only to specific buttons if this causes issues. */
+    max-width: 100%; /* Prevent button exceeding container width */
+    overflow: hidden; /* Hide overflow */
+    white-space: nowrap; /* Prevent text wrapping */
+    text-overflow: ellipsis; /* Show ellipsis (...) for overflow */
+}
+button:hover, .import-button:hover {
+    border-color: var(--accent);
+    background-color: var(--accent);
+    color: var(--accent-text);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 5px -1px var(--shadow-color); /* Slightly larger shadow on hover */
+}
+button:active, .import-button:active { transform: translateY(0px) scale(0.98); box-shadow: 0 1px 2px 0 var(--shadow-color); }
+button:disabled, .import-button:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
 button.primary-action { background-color: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 button.primary-action:hover { background-color: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-text); }
 button.danger { background-color: var(--danger); color: white; border-color: var(--danger); }
 button.danger:hover { background-color: var(--danger-hover); border-color: var(--danger-hover); color: white; }
-.back-btn, .cancel-form-btn { background: none; border: none; color: var(--accent); padding: var(--spacing-xs) 0; font-size: 0.95em; font-weight: 500; margin-bottom: var(--spacing-lg); box-shadow: none; }
+.back-btn, .cancel-form-btn {
+    background: none; border: none; color: var(--accent);
+    padding: var(--spacing-xs) 0; font-size: 0.95rem; font-weight: 500;
+    margin-bottom: var(--spacing-lg); box-shadow: none;
+    /* Remove button overflow handling for these link-like buttons */
+    max-width: none; overflow: visible; white-space: normal; text-overflow: clip;
+}
 .back-btn:hover, .cancel-form-btn:hover { text-decoration: underline; color: var(--accent-hover); background: none; transform: none; box-shadow: none;}
-button.small-btn { padding: var(--spacing-xs) var(--spacing-md); font-size: 0.9em; }
-.continue-reading-area { text-align: left; margin-bottom: var(--spacing-lg); }
-.continue-reading-area button { animation: fadeIn var(--animation-duration) ease-out; }
+
+/* Specific small button styles (used in chapter list) */
+button.small-btn {
+    padding: var(--btn-sm-padding-y) var(--btn-sm-padding-x); /* Use sm variables */
+    font-size: 0.9rem;
+    line-height: var(--btn-line-height); /* Keep consistent line height */
+    min-height: calc(var(--btn-sm-padding-y) * 2 + 1em * var(--btn-line-height) * 0.9); /* Calculate min height based on padding & font */
+    width: auto; /* Let padding and content determine width */
+    min-width: auto; /* Remove fixed/min width */
+    text-align: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* Inherits base button overflow handling */
+}
+
+/* === Continue Reading Button Area & Button Fix === */
+.continue-reading-area {
+    text-align: left;
+    margin-bottom: var(--spacing-lg);
+    overflow: hidden; /* Prevent button visually spilling out */
+}
+.continue-reading-area button {
+    /* Inherits base button overflow handling, ensures consistency */
+    animation: fadeIn var(--animation-duration) ease-out;
+    /* Display inline-block allows max-width to work correctly here if needed */
+    display: inline-block;
+}
+
 
 /* === Cards & Lists === */
-.card { background-color: var(--card-bg); border-radius: var(--border-radius-md); border: 1px solid var(--border); padding: var(--spacing-xl); box-shadow: 0 1px 2px 0 var(--shadow-color); margin-bottom: var(--spacing-lg); }
+.card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border);
+    padding: var(--spacing-xl); /* Increased card padding again */
+    box-shadow: 0 2px 5px -1px var(--shadow-color); /* Refined shadow */
+    margin-bottom: var(--spacing-lg);
+    transition: background-color var(--transition-norm), border-color var(--transition-norm);
+    overflow: hidden; /* Add overflow hidden to cards as a safety net for internal content */
+}
 .card-list { list-style: none; padding: 0; margin: 0; }
 .card-list li {
     background-color: var(--card-bg); border-radius: var(--border-radius-md); border: 1px solid var(--border);
-    padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md); display: flex; justify-content: space-between; align-items: center;
-    cursor: pointer; transition: all var(--transition-norm) ease; box-shadow: 0 1px 2px 0 var(--shadow-color);
-    /* Apply animation - reset opacity if needed */
+    padding: var(--spacing-md) var(--spacing-lg); margin-bottom: var(--spacing-md);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: var(--spacing-md);
+    cursor: pointer;
+    transition: all var(--transition-fast); /* Faster hover transition */
     animation: slideUpIn var(--animation-duration) ease-out forwards; opacity: 0;
+    min-height: calc(var(--spacing-md) * 2 + 1em * 1.6); /* Min height based on padding & line height */
+    overflow: hidden; /* Prevent content spilling out of list items */
 }
-/* Stagger animation delay - requires JS to add style or class */
-/* .card-list li:nth-child(1) { animation-delay: 0.05s; } ... etc ... */
 
-.card-list li:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 4px 6px -1px var(--shadow-color); border-color: var(--accent); }
-.list-item-actions { display: flex; gap: var(--spacing-sm); margin-left: var(--spacing-lg); }
-.list-item-actions button { padding: var(--spacing-xs) var(--spacing-sm); font-size: 0.9em; }
-li.placeholder { color: var(--text-secondary); cursor: default; text-align: center; padding: var(--spacing-xl); font-style: italic; box-shadow: none; border: 1px dashed var(--border); animation: none; opacity: 1; }
-li.placeholder:hover { transform: none; box-shadow: none; border-color: var(--border); }
-.card-list li.last-read { border-left: 4px solid var(--accent); padding-left: calc(var(--spacing-lg) - 4px); /* Adjust for border */ font-weight: 500; }
+.card-list li:hover {
+    transform: none; /* Remove hover transform */
+    box-shadow: 0 3px 6px -1px var(--shadow-color); /* Add shadow on hover only */
+    border-color: var(--accent);
+    background-color: var(--bg); /* Change background on hover */
+}
+.list-item-actions {
+    display: flex;
+    align-items: center; /* Vertically align buttons */
+    gap: var(--spacing-sm);
+    margin-left: var(--spacing-sm);
+    flex-shrink: 0;
+    white-space: nowrap; /* Keep actions on one line */
+}
+
+li.placeholder { color: var(--text-secondary); cursor: default; text-align: center; padding: var(--spacing-xl); font-style: italic; box-shadow: none; border: 1px dashed var(--border); animation: none; opacity: 0.7; justify-content: center; align-items: center; background-color: transparent; overflow: visible; /* Placeholder text should be allowed to wrap */ white-space: normal; }
+li.placeholder:hover { transform: none; box-shadow: none; border-color: var(--border); background-color: transparent; }
+.card-list li.last-read { border-left: 4px solid var(--accent); padding-left: calc(var(--spacing-lg) - 4px); font-weight: 600; } /* Make bolder */
 .card-list li.last-read a { font-weight: 600; }
 
-/* === Forms === */
-form.card { padding: var(--spacing-xl); }
-form div { margin-bottom: var(--spacing-lg); } /* Add spacing between form groups */
-form label { display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: 0.9em; color: var(--text); }
-form input[type="text"], form textarea {
-    width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--border-radius-md);
-    box-sizing: border-box; background-color: var(--bg); color: var(--text); font-size: 1em;
-    font-family: inherit; /* Ensure font consistency */
-    transition: border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+.card-list li a.chapter-title-link {
+    flex-grow: 1;
+    /* *** MODIFIED: Ensure flex properties allow shrinking *** */
+    flex-shrink: 1;
+    min-width: 0; /* Crucial for text-overflow in flex items */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-right: var(--spacing-sm);
+    color: inherit; /* Ensure link color matches text */
+    text-decoration: none; /* Remove underline */
+    transition: color var(--transition-fast);
 }
-form input[type="text"]:focus, form textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus-ring); }
-form textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+.card-list li:hover a.chapter-title-link {
+    color: var(--accent); /* Highlight link on row hover */
+}
+
+/* === Forms === */
+form.card { padding: var(--spacing-xl); overflow: visible; /* Forms might need internal scrollbars, don't hide */ }
+form div { margin-bottom: var(--spacing-lg); }
+form label { display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: 0.9rem; color: var(--text); }
+form input[type="text"], form textarea {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius-md);
+    box-sizing: border-box;
+    background-color: var(--bg); /* Use base bg */
+    color: var(--text);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-norm);
+    /* Inputs handle their own overflow (scrolling) */
+}
+form input[type="text"]:focus, form textarea:focus {
+    background-color: var(--card-bg); /* Slightly different bg on focus */
+    border-color: var(--accent);
+    /* Focus style handled by general rule */
+    outline: none;
+}
+form textarea { min-height: 150px; resize: vertical; line-height: 1.6; white-space: pre-wrap; /* Allow wrapping in textarea */ overflow-wrap: break-word; } /* Ensure wrapping in textarea */
 .form-actions { margin-top: var(--spacing-xl); display: flex; justify-content: flex-end; gap: var(--spacing-md); }
 
 /* === Specific View Styles === */
-.novel-meta p { margin-bottom: var(--spacing-sm); }
-.novel-meta p strong { color: var(--text); }
-.description-content { margin-top: var(--spacing-sm); line-height: 1.7; white-space: pre-wrap; color: var(--text-secondary); font-family: inherit; }
-.detail-actions { display: flex; gap: var(--spacing-md); }
-.readable-content { font-size: inherit; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; }
-#read-chapter-content-div { font-family: inherit; padding: var(--spacing-lg); } /* Add padding inside card */
+.novel-meta p {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.5;
+    overflow-wrap: break-word; /* Ensure metadata paragraphs wrap */
+    word-break: break-word;
+}
+.novel-meta p strong { color: var(--text); font-weight: 600; }
+.description-content {
+    margin-top: var(--spacing-sm);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word; /* Already has wrapping */
+    overflow-wrap: break-word; /* Add modern property */
+    color: var(--text-secondary);
+    font-family: inherit;
+}
+.detail-actions { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
+
+/* Reading View Specifics */
+#view-chapter-read { margin-top: var(--spacing-lg); }
+#read-chapter-title-h2 {
+    margin-bottom: var(--spacing-xl); /* More space below title */
+    font-size: 1.75rem; /* Match other h2 */
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: break-word; /* Ensure wrapping */
+    word-wrap: break-word; /* Fallback */
+    word-break: break-word; /* Added for robustness */
+    color: var(--text);
+}
+.readable-content.card {
+    padding: var(--spacing-xl); /* Ensure card has padding */
+    overflow: visible; /* Allow readable content to flow naturally */
+}
+#read-chapter-content-div {
+    padding: 0; /* Remove padding here if .readable-content card has it */
+    font-size: 1.1rem; /* Slightly larger reading font base */
+    line-height: 1.8; /* Good readability */
+    /* Inherit main font size changes from .app-main */
+    /* Body-level overflow-wrap should handle this, but add for extra safety */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
 
 /* === Error Box === */
 .error-box {
-    background-color: #fee; color: #a00; border: 1px solid #fdd;
-    padding: var(--spacing-lg); margin-bottom: var(--spacing-xl); border-radius: var(--border-radius-md);
+    background-color: hsla(0, 80%, 95%, 1); /* Use HSL for easier theme adjustments */
+    color: hsla(0, 70%, 40%, 1);
+    border: 1px solid hsla(0, 75%, 85%, 1);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    border-radius: var(--border-radius-md);
+    word-break: break-word; /* Already has wrapping */
+    overflow-wrap: break-word; /* Add modern property */
+    font-size: 0.95rem;
 }
 body.dark-mode .error-box {
-    background-color: #3e1a1a; color: #ffbaba; border: 1px solid #5c2a2a;
+    background-color: hsla(0, 30%, 20%, 1);
+    color: hsla(0, 80%, 85%, 1);
+    border: 1px solid hsla(0, 30%, 30%, 1);
+}
+
+/* === Responsive Adjustments === */
+@media (max-width: 768px) { /* Tablet breakpoint */
+     .app-main { padding: var(--spacing-lg); }
+     .header-content { padding: 0 var(--spacing-lg); }
+     .card { padding: var(--spacing-lg); }
+     form.card { padding: var(--spacing-lg); }
+}
+
+@media (max-width: 600px) { /* Mobile breakpoint */
+    html { font-size: 93.75%; /* 15px base */ }
+
+    .app-main { padding: var(--spacing-md); } /* Further reduce padding */
+    .header-content {
+        padding: 0 var(--spacing-md);
+        flex-direction: column;
+        align-items: stretch; /* Stretch items full width */
+    }
+    .app-header h1 { text-align: center; margin-bottom: var(--spacing-sm); }
+    .controls {
+        width: 100%;
+        justify-content: center; /* Center controls */
+        gap: var(--spacing-sm); /* Reduce gap */
+        margin-top: var(--spacing-sm);
+    }
+    /* Ensure controls buttons don't cause overflow when wrapped */
+    .controls button, .controls .import-button {
+        flex-grow: 1; /* Allow buttons to grow to fill space if needed */
+        min-width: 80px; /* Example min-width */
+    }
+    .font-controls { flex-grow: 0; /* Don't grow */ order: 1; /* Move below other buttons */ width: 100%; justify-content: center;} /* Revert grow */
+
+
+    .card { padding: var(--spacing-md); }
+    .view-header { flex-direction: column; align-items: stretch; } /* Stack and stretch */
+    .view-header h2, .view-header h3 { text-align: center; }
+    .view-header > div { /* Target action divs */ align-self: center; margin-top: var(--spacing-sm); }
+
+    .card-list li { padding: var(--spacing-sm) var(--spacing-md); } /* Adjust padding */
+    .list-item-actions { gap: var(--spacing-xs); margin-left: var(--spacing-xs); }
+    button.small-btn {
+        padding: var(--btn-sm-padding-y) var(--spacing-sm); /* Adjust padding */
+        font-size: 0.85rem; /* Smaller font */
+    }
+
+    form.card { padding: var(--spacing-md); }
+    .form-actions { justify-content: center; flex-wrap: wrap; } /* Center form buttons and allow wrapping */
+}
+
+@media (max-width: 400px) {
+     button, .import-button { font-size: 0.9rem; padding: var(--spacing-sm) var(--spacing-md); }
+     /* Ensure buttons don't overflow on very small screens */
+     .controls button, .controls .import-button {
+         flex-basis: calc(50% - var(--spacing-sm) / 2); /* Example: two buttons per row */
+         min-width: 60px; /* Adjust min-width */
+     }
+     .font-controls { width: 100%; } /* Ensure font controls span width */
+
+     button.small-btn { font-size: 0.8rem; padding: var(--spacing-xs) var(--spacing-sm); }
+     #theme-toggle-btn { padding: var(--spacing-sm); }
+     .card-list li { padding: var(--spacing-xs) var(--spacing-sm); }
 }

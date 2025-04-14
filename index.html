@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -21,7 +22,7 @@
                 <button id="export-data-btn" title="Export Backup">Export</button>
                 <label class="import-button" title="Import Backup">
                     Import
-                    <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                    <input type="file" id="import-file-input" accept=".json,.json.gz,.gz" style="display: none;">
                 </label>
             </div>
         </div>
@@ -59,13 +60,14 @@
             <hr>
             <div class="view-header">
                 <h3>Chapters</h3>
-                <button id="add-chapter-show-form-btn" class="primary-action">Add Chapter</button>
+                <div class="chapter-actions" style="display: flex; gap: var(--spacing-md);">
+                    <button id="download-all-chapters-btn" class="small-btn" title="Download all chapters as a single text file">Download All</button> <button id="add-chapter-show-form-btn" class="primary-action">Add Chapter</button>
+                </div>
             </div>
             <div id="continue-reading-container-div" class="continue-reading-area">
-            </div>
+                </div>
             <ul id="chapter-list-ul" class="card-list">
-                <li class="placeholder">Loading...</li>
-            </ul>
+                <li class="placeholder">Loading...</li> </ul>
         </div>
 
         <div id="view-chapter-read" class="view" data-view-id="chapter-read">
@@ -73,7 +75,7 @@
             <h2 id="read-chapter-title-h2">Chapter Title</h2>
             <div class="card readable-content">
                 <div id="read-chapter-content-div">
-                </div>
+                    </div>
             </div>
         </div>
 
