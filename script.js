@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     async function clearStaleLastRead(novelId) {
-        console.warn(`DB: Checking stale lastRead for novel ${novelId}.`);
+        console.log(`DB: Checking stale lastRead for novel ${novelId}.`);
         try {
             const novel = await getNovel(novelId);
             if (novel?.lastReadChapterId) {
