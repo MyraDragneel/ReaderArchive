@@ -161,15 +161,66 @@ document.addEventListener('DOMContentLoaded', () => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
             request.onerror = (e) => { console.error("DB: Open failed", e.target.error); reject(`Database error: ${e.target.error?.message || e.target.error}`); };
             request.onsuccess = (e) => { db = e.target.result; console.log("DB: Open success"); db.onerror = (ev) => { console.error("DB: Uncaught DB Error:", ev.target.error); showError(`Database error: ${ev.target.error?.message || ev.target.error}. Please refresh.`, true); }; resolve(db); };
+
+            // --- START OF CORRECTED onupgradeneeded ---
             request.onupgradeneeded = (e) => {
-                console.log('DB: Upgrading...'); db = e.target.result; const tx = e.target.transaction; if (!tx) { reject(new Error("DB upgrade failed: Transaction missing.")); return; }
+                console.log('DB: Upgrading...');
+                db = e.target.result;
+                const tx = e.target.transaction; // Get the upgrade transaction
+                if (!tx) {
+                    reject(new Error("DB upgrade failed: Transaction missing."));
+                    return;
+                }
                 try {
-                    if (!db.objectStoreNames.contains(NOVELS_STORE)) { db.createObjectStore(NOVELS_STORE, { keyPath: 'id', autoIncrement: true }); console.log(`DB: Created ${NOVELS_STORE}`); }
-                    let cs = tx.objectStore(CHAPTERS_STORE); if (!db.objectStoreNames.contains(CHAPTERS_STORE)) { cs = db.createObjectStore(CHAPTERS_STORE, { keyPath: 'id', autoIncrement: true }); console.log(`DB: Created ${CHAPTERS_STORE}`); }
-                    if (!cs.indexNames.contains(CHAPTER_NOVEL_ID_INDEX)) { cs.createIndex(CHAPTER_NOVEL_ID_INDEX, 'novelId', { unique: false }); console.log(`DB: Created index ${CHAPTER_NOVEL_ID_INDEX}`); }
-                } catch (err) { console.error("DB: Upgrade schema error:", err); tx.abort(); reject(new Error(`DB upgrade failed: ${err.message}`)); return; }
-                tx.oncomplete = () => console.log("DB: Upgrade complete."); tx.onerror = (ev) => console.error("DB: Upgrade tx error", ev.target.error); tx.onabort = (ev) => console.error("DB: Upgrade tx aborted", ev.target.error);
+                    // Handle Novels Store
+                    if (!db.objectStoreNames.contains(NOVELS_STORE)) {
+                        db.createObjectStore(NOVELS_STORE, { keyPath: 'id', autoIncrement: true });
+                        console.log(`DB: Created ${NOVELS_STORE}`);
+                    }
+
+                    // Handle Chapters Store
+                    let chaptersStore; // Variable to hold the object store reference
+
+                    // 1. Check if the store exists
+                    if (!db.objectStoreNames.contains(CHAPTERS_STORE)) {
+                        // 2. If not, create it
+                        chaptersStore = db.createObjectStore(CHAPTERS_STORE, { keyPath: 'id', autoIncrement: true });
+                        console.log(`DB: Created ${CHAPTERS_STORE}`);
+                    } else {
+                        // 3. If it exists, get a reference via the transaction
+                        chaptersStore = tx.objectStore(CHAPTERS_STORE);
+                        console.log(`DB: Found existing ${CHAPTERS_STORE}`);
+                    }
+
+                    // Now it's safe to work with chaptersStore to check/create the index
+                    if (!chaptersStore.indexNames.contains(CHAPTER_NOVEL_ID_INDEX)) {
+                        chaptersStore.createIndex(CHAPTER_NOVEL_ID_INDEX, 'novelId', { unique: false });
+                        console.log(`DB: Created index ${CHAPTER_NOVEL_ID_INDEX} on ${CHAPTERS_STORE}`);
+                    }
+
+                } catch (err) {
+                    console.error("DB: Upgrade schema error:", err);
+                    // Make sure to abort the transaction on error during upgrade
+                    if (tx && tx.abort) {
+                        tx.abort();
+                    }
+                    reject(new Error(`DB upgrade failed: ${err.message || err}`)); // Pass error message
+                    return; // Stop further execution in this handler
+                }
+
+                // Transaction completion/error handlers
+                tx.oncomplete = () => console.log("DB: Upgrade complete.");
+                tx.onerror = (ev) => {
+                    console.error("DB: Upgrade tx error", ev.target.error);
+                    // Reject the main promise if the transaction fails
+                    reject(new Error(`DB upgrade transaction failed: ${ev.target.error?.message || ev.target.error}`));
+                };
+                tx.onabort = (ev) => {
+                     console.error("DB: Upgrade tx aborted", ev.target.error);
+                     reject(new Error(`DB upgrade transaction aborted: ${ev.target.error?.message || ev.target.error}`));
+                };
             };
+            // --- END OF CORRECTED onupgradeneeded ---
         });
     }
     function performDBOperation(storeNames, mode, operation) {
