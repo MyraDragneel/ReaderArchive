@@ -5,24 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Novel Reader</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Add Favicon links here if you have them -->
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta name="description" content="A simple personal novel reader application.">
-    <!-- Add PWA manifest link here if applicable -->
     <!-- <link rel="manifest" href="manifest.json"> -->
 </head>
 <body>
 
     <header class="app-header">
         <div class="header-content">
-            <h1 class="app-title"> Local Novel Library</h1>
+            <h1 class="app-title">Local Novel Library</h1>
             <nav class="controls" aria-label="Application Controls">
-                <button id="theme-toggle-btn" class="control-btn icon-btn" title="Toggle Theme" aria-label="Toggle Theme" type="button">🌓</button>
+                <button id="theme-toggle-btn" class="control-btn icon-btn" title="Toggle Theme" aria-label="Toggle Theme" type="button">🌙</button>
                 <div class="font-controls">
-                    <button id="font-decrease-btn" class="control-btn" title="Decrease Font Size" aria-label="Decrease Font Size" type="button">-A</button>
-                    <span id="font-size-display" aria-live="polite">16</span><span class="unit">px</span>
-                    <button id="font-increase-btn" class="control-btn" title="Increase Font Size" aria-label="Increase Font Size" type="button">+A</button>
+                    <button id="font-decrease-btn" class="control-btn" title="Decrease Font Size" aria-label="Decrease Font Size" type="button">-</button>
+                    <span id="font-size-display" class="font-size-value" aria-live="polite">16</span><span class="unit">px</span>
+                    <button id="font-increase-btn" class="control-btn" title="Increase Font Size" aria-label="Increase Font Size" type="button">+</button>
                 </div>
                 <button id="export-data-btn" class="control-btn" title="Export Backup" type="button">Export</button>
                 <label class="control-btn import-button" title="Import Backup">
@@ -35,7 +33,7 @@
 
     <main id="app-container" class="app-main">
 
-        <div id="error-display" class="error-box" role="alert" aria-live="assertive" hidden></div>
+        <div id="message-display" class="message-box" role="alert" aria-live="assertive" hidden></div>
 
         <!-- Novel List View -->
         <section id="view-novel-list" class="view active" data-view-id="list" aria-labelledby="novel-list-heading">
@@ -52,7 +50,7 @@
         <section id="view-novel-detail" class="view" data-view-id="detail" aria-labelledby="detail-novel-title-h2" hidden>
             <nav><button class="back-btn" data-target-view="list" type="button">← Back to List</button></nav>
             <header class="view-header">
-                <h2 id="detail-novel-title-h2">Novel Title</h2>
+                <h2 id="detail-novel-title-h2" class="view-title">Novel Title</h2>
                 <div class="detail-actions">
                     <button id="edit-novel-show-form-btn" type="button">Edit Info</button>
                     <button id="delete-novel-btn" class="danger" type="button">Delete Novel</button>
@@ -69,13 +67,12 @@
                 <header class="view-header">
                     <h3 id="chapters-heading">Chapters</h3>
                     <div class="chapter-actions">
-                        <button id="download-all-chapters-btn" class="small-btn" title="Download all chapters as a single text file" type="button">Download All</button>
-                        <button id="add-chapter-show-form-btn" class="primary-action" type="button">Add Chapter</button>
+                         <!-- Continue Reading Button inserted here by JS -->
+                        <div id="continue-reading-container-div" class="continue-reading-area"></div>
+                        <button id="download-all-chapters-btn" class="small-btn" title="Download all chapters as compressed text" type="button">Download All (.txt.gz)</button>
+                        <button id="add-chapter-show-form-btn" class="primary-action small-btn" type="button">Add Chapter</button>
                     </div>
                 </header>
-                <div id="continue-reading-container-div" class="continue-reading-area">
-                    <!-- Continue Reading Button Added Here by JS -->
-                </div>
                 <ul id="chapter-list-ul" class="card-list" role="list">
                     <li class="placeholder" role="listitem">Loading chapters...</li>
                 </ul>
@@ -84,19 +81,24 @@
 
         <!-- Chapter Reading View -->
         <section id="view-chapter-read" class="view" data-view-id="read" aria-labelledby="read-chapter-title-h2" hidden>
-             <nav><button class="back-btn" data-target-view="detail" type="button">← Back to Novel</button></nav>
-            <h2 id="read-chapter-title-h2">Chapter Title</h2>
+             <nav>
+                 <button class="back-btn" data-target-view="detail" type="button">← Back to Novel Details</button>
+             </nav>
+            <h2 id="read-chapter-title-h2" class="view-title">Chapter Title</h2>
             <article class="card readable-content">
                 <div id="read-chapter-content-div">
                     <!-- Chapter Content Loaded Here -->
                 </div>
             </article>
+             <nav class="chapter-nav-bottom">
+                 <button class="back-btn" data-target-view="detail" type="button">← Back to Novel Details</button>
+             </nav>
         </section>
 
         <!-- Novel Add/Edit Form View -->
         <section id="view-novel-form" class="view" data-view-id="novelForm" aria-labelledby="novel-form-title-h2" hidden>
-            <nav><button class="cancel-form-btn" id="cancel-novel-form-btn" type="button">Cancel</button></nav>
-            <h2 id="novel-form-title-h2">Add/Edit Novel</h2>
+            <nav><button class="cancel-form-btn" id="cancel-novel-form-btn" type="button">Cancel</button></nav> <!-- Target view set dynamically -->
+            <h2 id="novel-form-title-h2" class="view-title">Add/Edit Novel</h2>
             <form id="novel-form-element" class="card form-card">
                 <input type="hidden" id="novel-form-edit-id" name="editId">
                 <div class="form-group">
@@ -123,8 +125,8 @@
 
         <!-- Chapter Add/Edit Form View -->
         <section id="view-chapter-form" class="view" data-view-id="chapterForm" aria-labelledby="chapter-form-title-h2" hidden>
-            <nav><button class="cancel-form-btn" id="cancel-chapter-form-btn" type="button">Cancel</button></nav>
-            <h2 id="chapter-form-title-h2">Add/Edit Chapter</h2>
+            <nav><button class="cancel-form-btn" id="cancel-chapter-form-btn" data-target-view="detail" type="button">Cancel</button></nav>
+            <h2 id="chapter-form-title-h2" class="view-title">Add/Edit Chapter</h2>
             <form id="chapter-form-element" class="card form-card">
                 <input type="hidden" id="chapter-form-edit-id" name="editId">
                 <input type="hidden" id="chapter-form-novel-id-input" name="novelId">
@@ -145,9 +147,9 @@
     </main>
 
     <footer class="app-footer">
-        <p>Simple Novel Reader V3</p>
+        <p>Simple Novel Reader V4</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script> <!-- Use type="module" -->
 </body>
 </html>
