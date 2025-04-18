@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Arial&family=Source+Code+Pro&family=Times+New+Roman&family=Lato&family=Lexend+Deca&family=Garamond&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Arial&family=Source+Code+Pro&family=Times+New+Roman&family=Garamond&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app-container">
@@ -20,17 +20,17 @@
             <header class="page-header home-header">
                 <h1>My Novels</h1>
                 <div class="header-actions home-actions">
-                    <button id="add-novel-btn" class="icon-btn" aria-label="Add Novel">➕</button>
-                    <button id="import-btn" class="icon-btn" aria-label="Import Novels">📥</button>
+                    <button id="add-novel-btn" class="icon-btn" aria-label="Add New Novel">➕</button>
+                    <button id="import-btn" class="icon-btn" aria-label="Import Novels Archive">📥</button>
                     <input type="file" id="import-file-input" accept=".novelarchive.gz" style="display: none;" aria-hidden="true">
                     <button id="export-btn" class="icon-btn" aria-label="Export All Novels">📤</button>
                     <div class="action-separator"></div>
-                    <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Theme">🌓</button>
-                    <button id="settings-btn" class="icon-btn" aria-label="Settings">⚙️</button>
+                    <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Light/Dark Theme">🌓</button>
+                    <button id="settings-btn" class="icon-btn" aria-label="Open Settings">⚙️</button>
                 </div>
             </header>
             <main class="page-content">
-                <ul id="novel-list" class="item-list">
+                <ul id="novel-list" class="item-list" aria-live="polite">
                     <li class="placeholder">Loading novels...</li>
                 </ul>
             </main>
@@ -39,30 +39,31 @@
         <!-- Settings Page -->
         <div id="settings-page" class="page">
             <header class="page-header">
-                <button class="back-btn icon-btn" data-target="home-page" aria-label="Back">⬅️</button>
+                <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
                 <h1>Settings</h1>
             </header>
             <main class="page-content">
-                <section class="danger-zone">
-                    <h2>Danger Zone</h2>
+                <section class="danger-zone" aria-labelledby="danger-zone-heading">
+                    <h2 id="danger-zone-heading">Danger Zone</h2>
                     <p>This permanently removes all novels, chapters, and settings stored by this app in your browser.</p>
                     <button id="delete-all-data-btn" class="danger">🗑️ Delete All App Data</button>
                 </section>
             </main>
         </div>
 
-        <!-- Novel Info Page (No structural changes needed here) -->
+        <!-- Novel Info Page -->
         <div id="novel-info-page" class="page">
             <header class="page-header">
-                 <button class="back-btn icon-btn" data-target="home-page" aria-label="Back">⬅️</button>
+                 <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
                  <h1 id="novel-info-title">Novel Title</h1>
                  <div class="header-actions">
-                     <button id="edit-novel-btn" class="icon-btn" aria-label="Edit Novel">✏️</button>
-                     <button id="delete-novel-btn" class="icon-btn danger" aria-label="Delete Novel">🗑️</button>
+                     <button id="edit-novel-btn" class="icon-btn" aria-label="Edit Novel Metadata">✏️</button>
+                     <button id="delete-novel-btn" class="icon-btn danger" aria-label="Delete This Novel">🗑️</button>
                  </div>
             </header>
             <main class="page-content">
-                <section id="novel-metadata" class="metadata-section">
+                <section id="novel-metadata" class="metadata-section" aria-labelledby="novel-metadata-heading">
+                    <h2 id="novel-metadata-heading" class="visually-hidden">Novel Details</h2>
                     <div class="metadata-grid">
                         <p><strong>Author:</strong> <span id="novel-info-author"></span></p>
                         <p><strong>Genre:</strong> <span id="novel-info-genre"></span></p>
@@ -73,51 +74,51 @@
                     </div>
                 </section>
                 <div class="last-read-section">
-                    <strong>Last Read:</strong> <span id="novel-info-last-read">Never</span>
+                    <strong>Last Read:</strong> <span id="novel-info-last-read" tabindex="-1">Never</span>
                 </div>
                 <hr>
-                <section>
+                <section aria-labelledby="chapters-heading">
                      <div class="section-header">
-                         <h2>Chapters</h2>
+                         <h2 id="chapters-heading">Chapters</h2>
                          <div class="button-group">
                              <button id="add-chapter-btn">➕ Add Chapter</button>
-                             <button id="bulk-download-chapters-btn">💾 Download All</button>
+                             <button id="bulk-download-chapters-btn" disabled>💾 Download All</button>
                          </div>
                      </div>
-                     <ul id="chapter-list" class="item-list">
+                     <ul id="chapter-list" class="item-list" aria-live="polite">
                          <li class="placeholder">No chapters added yet.</li>
                      </ul>
                 </section>
             </main>
         </div>
 
-        <!-- Reader Page (No structural changes needed here) -->
+        <!-- Reader Page -->
         <div id="reader-page" class="page">
             <header class="page-header reader-header">
-                 <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back">⬅️</button>
+                 <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back to Novel Info">⬅️</button>
                  <h2 id="reader-chapter-title">Chapter Title</h2>
                  <div class="header-actions">
-                    <button id="reader-settings-btn" class="icon-btn" aria-label="Reader Settings">Aa</button>
+                    <button id="reader-settings-btn" class="icon-btn" aria-label="Reader Display Settings">Aa</button>
                  </div>
             </header>
             <main id="reader-content-container" class="page-content reader-main">
-                 <div id="reader-content" class="text-content">
+                 <div id="reader-content" class="text-content" aria-live="polite">
                      <p>Loading...</p>
                  </div>
             </main>
             <footer class="page-footer reader-footer button-group">
-                 <button id="prev-chapter-btn" class="navigation-btn">⬅️ Previous</button>
+                 <button id="prev-chapter-btn" class="navigation-btn" disabled>⬅️ Previous</button>
                  <button class="back-btn reader-back-btn icon-btn" data-target="novel-info-page" aria-label="Back to Novel Info">📖</button>
-                 <button id="next-chapter-btn" class="navigation-btn">Next ➡️</button>
+                 <button id="next-chapter-btn" class="navigation-btn" disabled>Next ➡️</button>
             </footer>
         </div>
 
-        <!-- Novel Modal (No changes needed here) -->
+        <!-- Novel Modal -->
         <div id="novel-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="novel-modal-title-heading">
              <div class="modal-content">
                 <h2 id="novel-modal-title-heading">Add New Novel</h2>
                 <input type="hidden" id="novel-modal-id">
-                <div class="form-group"><label for="novel-modal-title-input">Title *</label><input type="text" id="novel-modal-title-input" required></div>
+                <div class="form-group"><label for="novel-modal-title-input">Title</label><input type="text" id="novel-modal-title-input" required></div>
                 <div class="form-group"><label for="novel-modal-author-input">Author</label><input type="text" id="novel-modal-author-input"></div>
                 <div class="form-group"><label for="novel-modal-genre-input">Genre</label><input type="text" id="novel-modal-genre-input"></div>
                 <div class="form-group"><label for="novel-modal-description-input">Description</label><textarea id="novel-modal-description-input" rows="5"></textarea></div>
@@ -125,29 +126,53 @@
             </div>
         </div>
 
-        <!-- Chapter Modal (No changes needed here) -->
+        <!-- Chapter Modal -->
         <div id="chapter-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="chapter-modal-title-heading">
               <div class="modal-content">
                 <h2 id="chapter-modal-title-heading">Add New Chapter</h2>
                 <input type="hidden" id="chapter-modal-novel-id"><input type="hidden" id="chapter-modal-index">
-                 <div class="form-group"><label for="chapter-modal-title-input">Chapter Title *</label><input type="text" id="chapter-modal-title-input" required></div>
-                 <div class="form-group"><label for="chapter-modal-content-input">Content *</label><textarea id="chapter-modal-content-input" rows="10" required></textarea></div>
+                 <div class="form-group"><label for="chapter-modal-title-input">Chapter Title</label><input type="text" id="chapter-modal-title-input" required></div>
+                 <div class="form-group"><label for="chapter-modal-content-input">Content</label><textarea id="chapter-modal-content-input" rows="10" required></textarea></div>
                 <div class="modal-actions button-group"><button id="cancel-chapter-modal-btn" class="secondary">Cancel</button><button id="save-chapter-modal-btn">Save Chapter</button></div>
              </div>
         </div>
 
-        <!-- Reader Settings Modal (No changes needed here) -->
+        <!-- Reader Settings Modal -->
         <div id="reader-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reader-settings-title-heading">
             <div class="modal-content reader-settings-modal-content">
                 <h2 id="reader-settings-title-heading">Reader Display</h2>
-                <div class="form-group"><label for="font-select">Font Family</label><select id="font-select" aria-label="Select Font"><option value="Arial, sans-serif">Arial</option><option value="'Times New Roman', Times, serif">Times New Roman</option><option value="'Source Code Pro', monospace">Source Code Pro</option><option value="'Lato', sans-serif">Lato</option><option value="'Lexend Deca', sans-serif">Lexend Deca</option><option value="'Garamond', serif">Garamond</option></select></div>
-                 <div class="form-group"><label for="font-size-select">Font Size</label><select id="font-size-select" aria-label="Select Font Size"><option value="12px">12</option><option value="14px">14</option><option value="16px">16</option><option value="18px">18</option><option value="20px">20</option><option value="22px">22</option><option value="24px">24</option><option value="26px">26</option><option value="28px">28</option></select></div>
-                <div class="modal-actions button-group"><button id="close-reader-settings-modal-btn" class="secondary">Close</button></div>
+                <div class="form-group">
+                    <label for="font-select">Font Family</label>
+                    <select id="font-select" aria-label="Select Font Family">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                        <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                        <option value="'Garamond', serif">Garamond</option>
+                     </select>
+                </div>
+                 <div class="form-group">
+                     <label for="font-size-select">Font Size</label>
+                     <select id="font-size-select" aria-label="Select Font Size">
+                        <option value="12px">12</option>
+                        <option value="14px">14</option>
+                        <option value="16px">16</option>
+                        <option value="18px">18</option>
+                        <option value="20px">20</option>
+                        <option value="22px">22</option>
+                        <option value="24px">24</option>
+                        <option value="26px">26</option>
+                        <option value="28px">28</option>
+                    </select>
+                </div>
+                <div class="modal-actions button-group">
+                    <button id="close-reader-settings-modal-btn" class="secondary">Close</button>
+                </div>
             </div>
         </div>
 
     </div> <!-- End #app-container -->
 
     <script src="script.js" defer></script>
+    <style>.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}</style>
 </body>
 </html>
