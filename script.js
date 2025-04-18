@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const novelModal = document.getElementById('novel-modal');
     const chapterModal = document.getElementById('chapter-modal');
     const readerSettingsModal = document.getElementById('reader-settings-modal');
-    const readerContentContainer = document.getElementById('reader-content-container');
+    // Changed ID for reader main content area
+    const readerMainContent = document.getElementById('reader-main-content');
     const readerContent = document.getElementById('reader-content');
     const readerChapterTitle = document.getElementById('reader-chapter-title');
     const fontSelect = document.getElementById('font-select');
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const THEME_KEY = 'novelReaderTheme';
     const FONT_KEY = 'novelReaderFont';
     const FONT_SIZE_KEY = 'novelReaderFontSize';
-    const DEFAULT_FONT = 'Arial, sans-serif';
+    const DEFAULT_FONT = 'Arial, sans-serif'; // Removed Garamond
     const DEFAULT_FONT_SIZE = '16px';
     const DEFAULT_THEME = 'light';
     const MODAL_CLOSE_DELAY = 180;
@@ -60,13 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
         registerServiceWorker();
         const opfsReady = await initOPFS();
         if (!opfsReady) {
-            alert("Warning: Origin Private File System (OPFS) is not available or could not be initialized. Saving/loading chapters might not work correctly.");
+            // Alert if OPFS init fails, but proceed - core viewing might work with localStorage only if adapted
+             alert("Warning: Origin Private File System (OPFS) is not available or could not be initialized. Saving/loading chapter content will not work.");
         }
         loadSettings();
         loadNovelsMetadata();
         renderNovelList();
         setupEventListeners();
-        showPage('home-page');
+        showPage('home-page'); // Show home page initially
     }
 
     function registerServiceWorker() {
@@ -79,12 +81,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initOPFS() {
         try {
+            // Prefer navigator.storage.getDirectory() if available
             if (navigator.storage && navigator.storage.getDirectory) {
                 opfsRoot = await navigator.storage.getDirectory();
-                console.log("OPFS Root acquired.");
+                console.log("OPFS Root acquired via navigator.storage.getDirectory().");
                 return true;
-            } else {
-                console.warn('OPFS API (navigator.storage.getDirectory) not supported.');
+            }
+            // Fallback for older API (might be removed in future browsers)
+            else if (window.webkitRequestFileSystem) {
+                 return new Promise((resolve, reject) => {
+                    window.webkitRequestFileSystem(window.PERSISTENT, 1024 * 1024 * 100, // 100MB quota request
+                        (fs) => {
+                             opfsRoot = fs.root; // This isn't exactly OPFS, but a sandboxed FS
+                             console.log("OPFS-like storage acquired via webkitRequestFileSystem.");
+                            resolve(true);
+                        },
+                        (e) => {
+                            console.error('webkitRequestFileSystem error:', e);
+                            reject(e);
+                        }
+                    );
+                }).catch(err => {
+                    console.error('Fallback FS Initialization Error:', err);
+                    opfsRoot = null;
+                    return false;
+                });
+            }
+            else {
+                console.warn('OPFS API (navigator.storage.getDirectory or fallback) not supported.');
+                opfsRoot = null;
                 return false;
             }
         } catch (error) {
@@ -93,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
     }
+
 
     // --- Navigation ---
     function showPage(pageId) {
@@ -103,17 +129,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isActive) activePage = page;
         });
 
+        // Scroll to top of the content area or page itself
         if (activePage) {
-            const contentArea = activePage.querySelector('.page-content');
-            if (contentArea) {
-                contentArea.scrollTop = 0;
-            } else {
-                 activePage.scrollTop = 0;
-            }
+             // Special handling for reader page scrolling container
+             if (pageId === 'reader-page' && readerMainContent) {
+                 readerMainContent.scrollTop = 0;
+             } else {
+                 const contentArea = activePage.querySelector('.page-content');
+                 if (contentArea) {
+                    contentArea.scrollTop = 0;
+                 } else {
+                    // Fallback for pages without a distinct .page-content (like reader potentially)
+                    activePage.scrollTop = 0;
+                 }
+             }
         } else {
-            window.scrollTo(0, 0);
+            window.scrollTo(0, 0); // Fallback scroll window
         }
 
+        // Load specific page data if needed
         if (pageId === 'novel-info-page' && currentNovelId) {
             loadNovelInfoPage(currentNovelId);
         }
@@ -127,11 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const theme = localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
         const font = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
         const fontSize = localStorage.getItem(FONT_SIZE_KEY) || DEFAULT_FONT_SIZE;
-        applyTheme(theme, false);
-        applyReaderStyles(font, fontSize, false);
+        applyTheme(theme, false); // Apply without saving again
+        applyReaderStyles(font, fontSize, false); // Apply without saving again
         fontSelect.value = font;
         fontSizeSelect.value = fontSize;
-        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
+        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓'; // Set initial icon
     }
 
     function saveSetting(key, value) {
@@ -147,17 +181,23 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
         themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
         themeToggleBtn.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`);
+
+        // Update meta theme-color for PWA consistency
         const lightMatcher = document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]');
         const darkMatcher = document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]');
         const lightColor = "#f8f9fa";
         const darkColor = "#1e1e1e";
+
         if (theme === 'dark') {
              if (lightMatcher) lightMatcher.content = darkColor;
+             // Update dark theme meta even if system prefers light
              if (darkMatcher) darkMatcher.content = darkColor;
         } else {
             if (lightMatcher) lightMatcher.content = lightColor;
-            if (darkMatcher) darkMatcher.content = lightColor;
+             // Update dark theme meta even if system prefers dark
+             if (darkMatcher) darkMatcher.content = lightColor;
         }
+
         if (save) saveSetting(THEME_KEY, theme);
     }
 
@@ -165,8 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const rootStyle = document.documentElement.style;
         rootStyle.setProperty('--font-family-reader', font);
         rootStyle.setProperty('--font-size-reader', size);
+
+        // Adjust line height based on font size for better readability
         const sizePx = parseInt(size, 10);
         rootStyle.setProperty('--line-height-reader', sizePx > 20 ? '1.8' : '1.7');
+
         if (save) {
             saveSetting(FONT_KEY, font);
             saveSetting(FONT_SIZE_KEY, size);
@@ -180,33 +223,40 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storedMetadata) {
             try {
                 const parsed = JSON.parse(storedMetadata);
+                // Basic validation
                 if (Array.isArray(parsed)) {
+                    // Sanitize loaded data
                     novelsMetadata = parsed.map(novel => ({
-                        id: novel.id || crypto.randomUUID(),
+                        id: novel.id || crypto.randomUUID(), // Ensure ID exists
                         title: novel.title || 'Untitled Novel',
                         author: novel.author || '',
                         genre: novel.genre || '',
                         description: novel.description || '',
                         chapters: Array.isArray(novel.chapters) ? novel.chapters.map(ch => ({
                             title: ch.title || 'Untitled Chapter',
+                            // Ensure opfsFileName exists, even if empty
                             opfsFileName: ch.opfsFileName || ''
                         })) : [],
+                        // Validate lastReadChapterIndex
                         lastReadChapterIndex: (typeof novel.lastReadChapterIndex === 'number' && novel.lastReadChapterIndex >= -1) ? novel.lastReadChapterIndex : -1,
                     }));
                 } else {
-                     throw new Error("Stored metadata is not an array.");
+                     console.warn("Stored metadata is not an array. Resetting.");
+                     localStorage.removeItem(METADATA_KEY); // Remove corrupted data
                 }
             } catch (e) {
                 console.error("Failed parsing novels metadata:", e);
-                localStorage.removeItem(METADATA_KEY);
+                localStorage.removeItem(METADATA_KEY); // Remove corrupted data
                 alert("Could not load novel list due to corrupted data. The list has been reset.");
             }
         }
+        // Ensure list is sorted after loading/parsing
         novelsMetadata.sort((a, b) => a.title.localeCompare(b.title));
     }
 
     function saveNovelsMetadata() {
         try {
+            // Ensure sorting before saving
             novelsMetadata.sort((a, b) => a.title.localeCompare(b.title));
             localStorage.setItem(METADATA_KEY, JSON.stringify(novelsMetadata));
         } catch (error) {
@@ -221,181 +271,441 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function findChapter(novelId, chapterIndex) {
         const novel = findNovel(novelId);
+        // Check bounds carefully
         return (novel?.chapters && chapterIndex >= 0 && chapterIndex < novel.chapters.length)
                ? novel.chapters[chapterIndex]
                : null;
     }
 
     // --- OPFS File Operations ---
-    async function getNovelDir(novelId, create = false) {
+     async function getNovelDir(novelId, create = false) {
         if (!opfsRoot) throw new Error("OPFS not initialized or available.");
         try {
-            return await opfsRoot.getDirectoryHandle(novelId, { create });
+             // Standard OPFS API
+            if (opfsRoot.getDirectoryHandle) {
+                return await opfsRoot.getDirectoryHandle(novelId, { create });
+            }
+            // Fallback (webkitFileSystem) - Less standard, more synchronous-like callbacks
+            else if (opfsRoot.getDirectory) {
+                return new Promise((resolve, reject) => {
+                    opfsRoot.getDirectory(novelId, { create }, resolve, reject);
+                });
+            } else {
+                throw new Error("Unsupported OPFS/FileSystem handle.");
+            }
         } catch (error) {
             console.error(`Error getting directory handle for novel ${novelId} (create: ${create}):`, error);
-            throw error;
+            throw error; // Re-throw for calling function to handle
         }
     }
 
+
     async function saveChapterContent(novelId, chapterIndex, content) {
         if (!opfsRoot) throw new Error("OPFS not ready for saving.");
+
         const novel = findNovel(novelId);
-        const chapter = novel?.chapters?.[chapterIndex]; // Use optional chaining
+        const chapter = novel?.chapters?.[chapterIndex];
         if (!chapter) throw new Error(`Chapter metadata missing for novel ${novelId}, index ${chapterIndex}.`);
+
+        // Generate a consistent filename
         const fileName = `ch_${String(chapterIndex).padStart(5, '0')}.txt`;
+        // Update metadata immediately (even if save fails, this reflects intent)
         chapter.opfsFileName = fileName;
+
         try {
-            const novelDirHandle = await getNovelDir(novelId, true);
-            const fileHandle = await novelDirHandle.getFileHandle(fileName, { create: true });
-            const writable = await fileHandle.createWritable();
-            await writable.write(content);
-            await writable.close();
-            return true;
+            const novelDirHandle = await getNovelDir(novelId, true); // Ensure directory exists
+
+             // Standard OPFS API
+            if (novelDirHandle.getFileHandle) {
+                 const fileHandle = await novelDirHandle.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(content);
+                await writable.close();
+            }
+            // Fallback (webkitFileSystem)
+            else if (novelDirHandle.getFile) {
+                 await new Promise((resolve, reject) => {
+                    novelDirHandle.getFile(fileName, { create: true }, (fileEntry) => {
+                         fileEntry.createWriter((fileWriter) => {
+                            fileWriter.onwriteend = () => {
+                                // Check if truncation is needed (overwrite)
+                                if (fileWriter.length > content.length) {
+                                     fileWriter.onwriteend = resolve; // Resolve after truncate completes
+                                     fileWriter.truncate(content.length);
+                                } else {
+                                    resolve();
+                                }
+                            };
+                            fileWriter.onerror = reject;
+                            const blob = new Blob([content], { type: 'text/plain' });
+                            fileWriter.write(blob);
+                        }, reject);
+                    }, reject);
+                });
+            } else {
+                 throw new Error("Unsupported Directory handle for file operations.");
+            }
+
+            console.log(`Successfully saved chapter ${chapterIndex} (file: ${fileName})`);
+            return true; // Indicate success
+
         } catch (error) {
             console.error(`Error saving chapter ${chapterIndex} content (file: ${fileName}):`, error);
-            throw new Error(`Failed to save chapter file: ${error.message}`);
+            // Don't revert opfsFileName here, it might be correct for a future attempt
+            throw new Error(`Failed to save chapter file: ${error.message}`); // Propagate error
         }
     }
 
     async function readChapterContent(novelId, chapterIndex) {
         if (!opfsRoot) return "Error: File storage unavailable.";
+
         const chapter = findChapter(novelId, chapterIndex);
         if (!chapter) return "Error: Chapter metadata not found.";
+
+        // Derive filename if not stored (legacy or error fallback)
         const fileName = chapter.opfsFileName || `ch_${String(chapterIndex).padStart(5, '0')}.txt`;
-        if (!fileName) return "Error: Chapter file information missing.";
+        if (!fileName) return "Error: Chapter file information missing."; // Should not happen if metadata is sound
+
         try {
-            const novelDirHandle = await getNovelDir(novelId, false);
-            const fileHandle = await novelDirHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            return await file.text();
+            const novelDirHandle = await getNovelDir(novelId, false); // Don't create if reading
+
+             // Standard OPFS API
+            if (novelDirHandle.getFileHandle) {
+                 const fileHandle = await novelDirHandle.getFileHandle(fileName);
+                const file = await fileHandle.getFile();
+                return await file.text();
+            }
+            // Fallback (webkitFileSystem)
+            else if (novelDirHandle.getFile) {
+                return await new Promise((resolve, reject) => {
+                     novelDirHandle.getFile(fileName, {}, (fileEntry) => {
+                        fileEntry.file((file) => {
+                             const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsText(file);
+                        }, reject);
+                    }, (err) => {
+                        // Handle file not found specifically for this fallback
+                        if (err.name === 'NotFoundError' || err.code === FileError.NOT_FOUND_ERR) {
+                             reject(new DOMException('File not found', 'NotFoundError'));
+                        } else {
+                            reject(err);
+                        }
+                    });
+                 });
+             } else {
+                 throw new Error("Unsupported Directory handle for file operations.");
+             }
         } catch (error) {
-            if (error.name === 'NotFoundError') {
+            // Normalize "Not Found" error reporting
+             if (error.name === 'NotFoundError' || (error.code && error.code === FileError.NOT_FOUND_ERR)) {
                 console.warn(`File not found for chapter ${chapterIndex} (Novel ${novelId}, File: ${fileName}).`);
                 return `Error: Chapter file (${fileName}) not found in storage.`;
             }
+            // Log other errors and report generic failure
             console.error(`Error reading chapter ${chapterIndex} (file: ${fileName}):`, error);
             return `Error reading file: ${error.message}`;
         }
     }
 
-    async function deleteChapterFile(novelId, chapterIndex) {
+
+     async function deleteChapterFile(novelId, chapterIndex) {
         if (!opfsRoot) {
             console.warn("OPFS not available, cannot delete chapter file.");
-            return false;
+            return false; // Indicate failure
         }
+
         const chapter = findChapter(novelId, chapterIndex);
         const fileName = chapter?.opfsFileName;
+
+        // If no filename stored, assume file doesn't exist or metadata is inconsistent
         if (!fileName) {
             console.warn(`Skipping file deletion for chapter ${chapterIndex} (Novel ${novelId}): No filename stored.`);
-            return true;
+            return true; // Treat as success (nothing to delete)
         }
+
         try {
-            const novelDirHandle = await getNovelDir(novelId, false);
-            await novelDirHandle.removeEntry(fileName);
+            const novelDirHandle = await getNovelDir(novelId, false); // Don't create
+
+             // Standard OPFS API
+             if (novelDirHandle.removeEntry) {
+                 await novelDirHandle.removeEntry(fileName);
+             }
+              // Fallback (webkitFileSystem) - requires getting the entry first
+             else if (novelDirHandle.getFile) {
+                 await new Promise((resolve, reject) => {
+                    novelDirHandle.getFile(fileName, {}, (fileEntry) => {
+                        fileEntry.remove(resolve, reject);
+                    }, (err) => {
+                        // If file not found during delete attempt, it's effectively deleted
+                         if (err.name === 'NotFoundError' || err.code === FileError.NOT_FOUND_ERR) {
+                            resolve();
+                        } else {
+                            reject(err);
+                        }
+                     });
+                 });
+             } else {
+                 throw new Error("Unsupported Directory handle for file operations.");
+             }
+
             console.log(`Deleted file ${fileName} for chapter ${chapterIndex} (Novel ${novelId}).`);
-            return true;
+            return true; // Indicate success
+
         } catch (error) {
-            if (error.name === 'NotFoundError') {
-                console.warn(`Attempted delete file ${fileName} (chapter ${chapterIndex}, novel ${novelId}), not found.`);
-                return true;
+             // Normalize "Not Found" error handling during deletion
+             if (error.name === 'NotFoundError' || (error.code && error.code === FileError.NOT_FOUND_ERR)) {
+                console.warn(`Attempted delete file ${fileName} (chapter ${chapterIndex}, novel ${novelId}), not found. Considered success.`);
+                return true; // File already gone is a success state
             }
+            // Log actual errors
             console.error(`Error deleting file ${fileName} for chapter ${chapterIndex} (Novel ${novelId}):`, error);
-            return false;
+            return false; // Indicate failure
         }
     }
 
     async function deleteNovelData(novelId) {
         const novel = findNovel(novelId);
-        if (!novel) return;
+        if (!novel) {
+            console.warn(`Attempted delete non-existent novel metadata: ${novelId}`);
+            return; // Nothing to do if metadata is gone
+        }
+
+        // Attempt OPFS directory removal first
         if (opfsRoot) {
             try {
-                console.log(`Attempting remove OPFS dir: ${novelId}`);
-                await opfsRoot.removeEntry(novelId, { recursive: true });
-                console.log(`Removed OPFS dir: ${novelId}`);
+                 console.log(`Attempting to remove OPFS directory: ${novelId}`);
+                 // Standard OPFS API
+                 if (opfsRoot.removeEntry) {
+                     await opfsRoot.removeEntry(novelId, { recursive: true });
+                 }
+                 // Fallback (webkitFileSystem) - requires getting the entry first
+                 else if (opfsRoot.getDirectory) {
+                    await new Promise((resolve, reject) => {
+                        opfsRoot.getDirectory(novelId, {}, (dirEntry) => {
+                             dirEntry.removeRecursively(resolve, reject);
+                        }, (err) => {
+                            // If dir not found during delete attempt, it's effectively deleted
+                            if (err.name === 'NotFoundError' || err.code === FileError.NOT_FOUND_ERR) {
+                                resolve();
+                            } else {
+                                reject(err);
+                            }
+                        });
+                    });
+                 } else {
+                     console.warn("Unsupported OPFS/FileSystem handle for directory removal.");
+                 }
+                console.log(`Successfully removed OPFS directory: ${novelId}`);
             } catch (error) {
-                if (error.name !== 'NotFoundError') {
-                    console.error(`Error deleting OPFS dir ${novelId}:`, error);
-                    alert(`Warning: Could not delete all files for novel "${novel.title}".`);
+                 // Normalize "Not Found" error handling
+                if (error.name !== 'NotFoundError' && (!error.code || error.code !== FileError.NOT_FOUND_ERR)) {
+                    console.error(`Error deleting OPFS directory ${novelId}:`, error);
+                    // Alert user but proceed with metadata removal
+                    alert(`Warning: Could not delete all files for novel "${novel.title}". Some data may remain.`);
                 } else {
-                    console.log(`OPFS dir ${novelId} not found, skipping removal.`);
+                    console.log(`OPFS directory ${novelId} not found, skipping removal.`);
                 }
             }
         } else {
-            console.warn("OPFS not available, cannot delete novel dir.");
+            console.warn("OPFS not available, cannot delete novel directory data.");
+            // Optionally alert the user that files might remain if OPFS was expected
+            // alert(`Warning: Could not delete files for novel "${novel.title}" as storage is unavailable.`);
         }
+
+        // Remove metadata from the array
         const novelIndex = novelsMetadata.findIndex(n => n.id === novelId);
         if (novelIndex > -1) {
             novelsMetadata.splice(novelIndex, 1);
-            saveNovelsMetadata();
+            saveNovelsMetadata(); // Persist the removal
             console.log(`Removed metadata for novel: ${novelId}`);
         }
     }
 
+
     async function deleteAllData() {
-        if (!confirm('⚠️ WARNING! ⚠️\n\nDelete ALL novels, chapters, progress, and settings?\nThis CANNOT be undone.\n\nProceed?')) return;
-        localStorage.removeItem(METADATA_KEY);
-        localStorage.removeItem(THEME_KEY);
-        localStorage.removeItem(FONT_KEY);
-        localStorage.removeItem(FONT_SIZE_KEY);
-        novelsMetadata = [];
-        console.log("Cleared localStorage data.");
+        if (!confirm('⚠️ WARNING! ⚠️\n\nThis will permanently delete ALL novels, chapters, reading progress, and display settings stored by this app in your browser.\n\nThis action CANNOT BE UNDONE.\n\nAre you absolutely sure you want to proceed?')) {
+            return; // User cancelled
+        }
+
+        // 1. Clear localStorage
+        try {
+            localStorage.removeItem(METADATA_KEY);
+            localStorage.removeItem(THEME_KEY);
+            localStorage.removeItem(FONT_KEY);
+            localStorage.removeItem(FONT_SIZE_KEY);
+            novelsMetadata = []; // Clear in-memory state
+            console.log("Cleared localStorage data.");
+        } catch (e) {
+            console.error("Error clearing localStorage:", e);
+            alert("An error occurred while clearing settings data.");
+            // Decide whether to proceed with OPFS clear or stop
+        }
+
+        // 2. Clear OPFS
         if (opfsRoot) {
-            console.log("Clearing OPFS directories...");
+            console.log("Attempting to clear OPFS directories...");
+            let opfsClearFailed = false;
             try {
-                const entries = [];
-                for await (const entry of opfsRoot.values()) { if (entry.kind === 'directory') entries.push(entry.name); }
-                console.log(`Found OPFS dirs to remove: ${entries.join(', ')}`);
-                await Promise.all(
-                    entries.map(name => opfsRoot.removeEntry(name, { recursive: true })
+                const entriesToRemove = [];
+                // Standard OPFS API iteration
+                if (opfsRoot.values) {
+                    for await (const entry of opfsRoot.values()) {
+                        // Ensure we only try to remove directories (novel data containers)
+                        if (entry.kind === 'directory') {
+                            entriesToRemove.push(entry.name);
+                        }
+                    }
+                }
+                // Fallback (webkitFileSystem) iteration
+                else if (opfsRoot.createReader) {
+                    await new Promise((resolve, reject) => {
+                         const dirReader = opfsRoot.createReader();
+                        dirReader.readEntries((entries) => {
+                             entries.forEach(entry => {
+                                if (entry.isDirectory) {
+                                    entriesToRemove.push(entry.name);
+                                }
+                            });
+                            resolve();
+                        }, reject);
+                    });
+                } else {
+                     console.warn("Unsupported OPFS/FileSystem handle for listing entries.");
+                 }
+
+                console.log(`Found OPFS directories to remove: ${entriesToRemove.join(', ')}`);
+
+                // Map removal promises
+                 const removalPromises = entriesToRemove.map(name => {
+                    // Standard OPFS API
+                    if (opfsRoot.removeEntry) {
+                        return opfsRoot.removeEntry(name, { recursive: true })
                             .then(() => console.log(`Removed OPFS dir: ${name}`))
-                            .catch(err => console.error(`Failed remove OPFS dir ${name}:`, err)))
-                );
-                console.log("Finished OPFS clearing.");
+                            .catch(err => {
+                                console.error(`Failed to remove OPFS dir ${name}:`, err);
+                                opfsClearFailed = true; // Mark failure
+                            });
+                    }
+                    // Fallback (webkitFileSystem)
+                    else if (opfsRoot.getDirectory) {
+                         return new Promise((resolve, reject) => {
+                            opfsRoot.getDirectory(name, {}, (dirEntry) => {
+                                 dirEntry.removeRecursively(() => {
+                                    console.log(`Removed OPFS dir (fallback): ${name}`);
+                                    resolve();
+                                }, (err) => {
+                                    console.error(`Failed remove OPFS dir ${name} (fallback):`, err);
+                                     opfsClearFailed = true;
+                                     reject(err); // Reject promise on error
+                                });
+                            }, (err) => {
+                                // Ignore if directory not found during delete all
+                                 if (err.name === 'NotFoundError' || err.code === FileError.NOT_FOUND_ERR) {
+                                     console.warn(`Dir ${name} not found during clear, skipping.`);
+                                     resolve();
+                                } else {
+                                     console.error(`Error getting dir ${name} for removal (fallback):`, err);
+                                     opfsClearFailed = true;
+                                     reject(err);
+                                }
+                             });
+                         });
+                     } else {
+                         console.warn(`Cannot remove directory ${name}, unsupported handle.`);
+                         return Promise.resolve(); // Resolve immediately if unsupported
+                     }
+                 });
+
+                await Promise.all(removalPromises); // Wait for all removals
+
+                if (!opfsClearFailed) {
+                    console.log("Finished OPFS clearing successfully.");
+                } else {
+                    console.warn("Finished OPFS clearing with errors.");
+                    alert('Warning: Could not automatically clear all stored novel files. Some data might remain.');
+                }
+
             } catch (error) {
-                console.error('Error listing/clearing OPFS:', error);
-                alert('Could not auto-clear all stored novel files.');
+                console.error('Error during OPFS clearing process:', error);
+                alert('An error occurred while clearing stored novel files.');
+                opfsClearFailed = true;
             }
         } else {
-            console.warn("OPFS not available, skipping OPFS clear.");
+            console.warn("OPFS not available, skipping OPFS clear operation.");
+            // Optionally inform the user that files might remain if they expected OPFS
+            // alert("Storage system not available, could not clear novel files.");
         }
-        applyTheme(DEFAULT_THEME);
-        applyReaderStyles(DEFAULT_FONT, DEFAULT_FONT_SIZE);
+
+        // 3. Reset UI and Settings to defaults
+        applyTheme(DEFAULT_THEME); // Apply default theme
+        applyReaderStyles(DEFAULT_FONT, DEFAULT_FONT_SIZE); // Apply default styles
         fontSelect.value = DEFAULT_FONT;
         fontSizeSelect.value = DEFAULT_FONT_SIZE;
-        renderNovelList();
-        showPage('home-page');
-        alert('All application data deleted.');
+        renderNovelList(); // Update the novel list (should show empty placeholder)
+        showPage('home-page'); // Navigate back to home
+
+        // 4. Final confirmation
+        alert('All application data has been deleted.');
     }
+
 
     // --- UI Rendering ---
     function renderNovelList() {
-        novelList.innerHTML = '';
+        novelList.innerHTML = ''; // Clear existing list
         if (novelsMetadata.length === 0) {
             novelList.innerHTML = '<li class="placeholder">No novels yet. Use ➕ to add one!</li>';
             exportButton.disabled = true;
             exportButton.setAttribute('aria-disabled', 'true');
             return;
         }
+
+        // Enable export if there's data
         exportButton.disabled = false;
         exportButton.setAttribute('aria-disabled', 'false');
+
         novelsMetadata.forEach(novel => {
             const li = document.createElement('li');
             li.dataset.novelId = novel.id;
             li.setAttribute('role', 'button');
             li.tabIndex = 0;
             li.setAttribute('aria-label', `Open novel: ${novel.title || 'Untitled Novel'}`);
-            li.innerHTML = `
-                <div class="item-content">
-                    <span class="title"></span>
-                    <span class="subtitle"></span>
-                </div>
-                <span aria-hidden="true" style="margin-left: auto; color: var(--text-muted); font-size: 1.2em;">›</span>
-            `;
-            li.querySelector('.title').textContent = novel.title || 'Untitled Novel';
-            li.querySelector('.subtitle').textContent = novel.author || 'Unknown Author';
-            const navigate = () => { currentNovelId = novel.id; showPage('novel-info-page'); };
+
+            // Use textContent for security and simplicity
+            const itemContent = document.createElement('div');
+            itemContent.className = 'item-content';
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'title';
+            titleSpan.textContent = novel.title || 'Untitled Novel';
+            const subtitleSpan = document.createElement('span');
+            subtitleSpan.className = 'subtitle';
+            subtitleSpan.textContent = novel.author || 'Unknown Author';
+            itemContent.appendChild(titleSpan);
+            itemContent.appendChild(subtitleSpan);
+
+            const arrowSpan = document.createElement('span');
+            arrowSpan.setAttribute('aria-hidden', 'true');
+            arrowSpan.style.marginLeft = 'auto';
+            arrowSpan.style.color = 'var(--text-muted)';
+            arrowSpan.style.fontSize = '1.2em';
+            arrowSpan.textContent = '›';
+
+            li.appendChild(itemContent);
+            li.appendChild(arrowSpan);
+
+            const navigate = () => {
+                currentNovelId = novel.id;
+                showPage('novel-info-page');
+            };
+
             li.addEventListener('click', navigate);
-            li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(); } });
+            li.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault(); // Prevent space scrolling page
+                    navigate();
+                }
+            });
             novelList.appendChild(li);
         });
     }
@@ -405,444 +715,1143 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!novel) {
             console.error(`Novel info load failed: ID ${novelId} not found.`);
             alert("Error: Could not find selected novel.");
-            showPage('home-page');
+            showPage('home-page'); // Go back home if novel is missing
             return;
         }
+
+        // Update novel details using textContent
         novelInfoTitle.textContent = novel.title || 'Untitled Novel';
         novelInfoAuthor.textContent = novel.author || 'N/A';
         novelInfoGenre.textContent = novel.genre || 'N/A';
         novelInfoDescription.textContent = novel.description || 'No description provided.';
-        const lastReadChapter = findChapter(novelId, novel.lastReadChapterIndex);
+
+        // Update "Last Read" section
+        const lastReadChapterIndex = novel.lastReadChapterIndex;
+        const lastReadChapter = findChapter(novelId, lastReadChapterIndex);
+
         if (lastReadChapter) {
-            novelInfoLastRead.textContent = lastReadChapter.title || `Chapter ${novel.lastReadChapterIndex + 1}`;
+            const chapterTitle = lastReadChapter.title || `Chapter ${lastReadChapterIndex + 1}`;
+            novelInfoLastRead.textContent = chapterTitle;
             novelInfoLastRead.classList.add('clickable');
-            novelInfoLastRead.setAttribute('role', 'link');
-            novelInfoLastRead.tabIndex = 0;
-            novelInfoLastRead.setAttribute('aria-label', `Continue reading: ${novelInfoLastRead.textContent}`);
-            novelInfoLastRead.onclick = () => { currentChapterIndex = novel.lastReadChapterIndex; showPage('reader-page'); };
-             novelInfoLastRead.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); novelInfoLastRead.click(); } };
+            novelInfoLastRead.setAttribute('role', 'link'); // Semantically a link
+            novelInfoLastRead.tabIndex = 0; // Make focusable
+            novelInfoLastRead.setAttribute('aria-label', `Continue reading: ${chapterTitle}`);
+
+            // Define click/keydown handler separately for clarity and potential reuse/removal
+            const continueReadingHandler = (e) => {
+                 if (e.type === 'click' || (e.type === 'keydown' && (e.key === 'Enter' || e.key === ' '))) {
+                     e.preventDefault();
+                    currentChapterIndex = lastReadChapterIndex;
+                    showPage('reader-page');
+                }
+            };
+
+            // Remove previous listeners before adding new ones to prevent duplicates
+            novelInfoLastRead.onclick = null;
+            novelInfoLastRead.onkeydown = null;
+            novelInfoLastRead.addEventListener('click', continueReadingHandler);
+            novelInfoLastRead.addEventListener('keydown', continueReadingHandler);
+
         } else {
             novelInfoLastRead.textContent = 'Never';
             novelInfoLastRead.classList.remove('clickable');
             novelInfoLastRead.removeAttribute('role');
-            novelInfoLastRead.tabIndex = -1;
+            novelInfoLastRead.tabIndex = -1; // Not focusable
             novelInfoLastRead.removeAttribute('aria-label');
-            novelInfoLastRead.onclick = null;
+            novelInfoLastRead.onclick = null; // Remove listeners
             novelInfoLastRead.onkeydown = null;
         }
+
+        // Render the chapter list for this novel
         renderChapterList(novelId);
     }
 
     function renderChapterList(novelId) {
         const novel = findNovel(novelId);
-        chapterListEl.innerHTML = '';
+        chapterListEl.innerHTML = ''; // Clear previous list
+
         const chapters = novel?.chapters || [];
-        bulkDownloadBtn.disabled = chapters.length === 0;
-        bulkDownloadBtn.setAttribute('aria-disabled', chapters.length === 0 ? 'true' : 'false');
-        if (chapters.length === 0) {
+
+        // Update bulk download button state
+        const hasChapters = chapters.length > 0;
+        bulkDownloadBtn.disabled = !hasChapters;
+        bulkDownloadBtn.setAttribute('aria-disabled', String(!hasChapters));
+
+        if (!hasChapters) {
             chapterListEl.innerHTML = '<li class="placeholder">No chapters added yet.</li>';
             return;
         }
+
         chapters.forEach((chapter, index) => {
             const li = document.createElement('li');
-            li.dataset.chapterIndex = index;
-            li.innerHTML = `
-                <div class="item-content chapter-title-container" role="button" tabIndex="0">
-                    <span class="title"></span>
-                </div>
-                <div class="item-actions chapter-controls">
-                    <button class="edit-chapter-btn icon-btn" aria-label="Edit Chapter">✏️</button>
-                    <button class="download-chapter-btn icon-btn" aria-label="Download Chapter">💾</button>
-                    <button class="delete-chapter-btn icon-btn danger" aria-label="Delete Chapter">🗑️</button>
-                </div>`;
+            li.dataset.chapterIndex = index; // Store index for event handlers
+
             const chapterTitle = chapter.title || `Chapter ${index + 1}`;
-            li.querySelector('.title').textContent = chapterTitle;
-            const titleContainer = li.querySelector('.chapter-title-container');
-            titleContainer.setAttribute('aria-label', `Read ${chapterTitle}`);
-            const navigateToReader = () => { currentChapterIndex = index; showPage('reader-page'); };
-            titleContainer.addEventListener('click', navigateToReader);
-            titleContainer.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToReader(); } });
-            li.querySelector('.edit-chapter-btn').addEventListener('click', (e) => { e.stopPropagation(); openChapterModal(novelId, index); });
-            li.querySelector('.download-chapter-btn').addEventListener('click', (e) => { e.stopPropagation(); downloadChapter(novelId, index); });
-            li.querySelector('.delete-chapter-btn').addEventListener('click', async (e) => {
+
+            // Create elements programmatically for better control and security
+            const itemContent = document.createElement('div');
+            itemContent.className = 'item-content chapter-title-container';
+            itemContent.setAttribute('role', 'button');
+            itemContent.tabIndex = 0;
+            itemContent.setAttribute('aria-label', `Read ${chapterTitle}`);
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'title';
+            titleSpan.textContent = chapterTitle;
+            itemContent.appendChild(titleSpan);
+
+            const itemActions = document.createElement('div');
+            itemActions.className = 'item-actions chapter-controls';
+
+            // Edit Button
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-chapter-btn icon-btn';
+            editBtn.setAttribute('aria-label', `Edit ${chapterTitle}`);
+            editBtn.textContent = '✏️';
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent li click event
+                openChapterModal(novelId, index);
+            });
+
+            // Download Button
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-chapter-btn icon-btn';
+            downloadBtn.setAttribute('aria-label', `Download ${chapterTitle}`);
+            downloadBtn.textContent = '💾';
+            downloadBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (confirm(`Delete chapter: "${chapterTitle}"?\nThis removes its content permanently.`)) {
-                    const deleteSuccess = await deleteChapterFile(novelId, index);
-                    if (deleteSuccess) {
-                        novel.chapters.splice(index, 1);
-                        if (novel.lastReadChapterIndex === index) novel.lastReadChapterIndex = -1;
-                        else if (novel.lastReadChapterIndex > index) novel.lastReadChapterIndex--;
-                        saveNovelsMetadata();
-                        renderChapterList(novelId);
-                        loadNovelInfoPage(novelId); // Update last read potentially
-                    } else {
-                        alert(`Failed to delete file for chapter "${chapterTitle}". Metadata not removed.`);
+                downloadChapter(novelId, index).catch(err => console.warn("Download failed:", err)); // Handle promise rejection
+            });
+
+            // Delete Button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-chapter-btn icon-btn danger';
+            deleteBtn.setAttribute('aria-label', `Delete ${chapterTitle}`);
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (confirm(`Are you sure you want to delete chapter: "${chapterTitle}"?\nThis action removes its content permanently and cannot be undone.`)) {
+                    try {
+                        const deleteSuccess = await deleteChapterFile(novelId, index);
+                        if (deleteSuccess) {
+                            // Remove chapter from metadata
+                            novel.chapters.splice(index, 1);
+                            // Adjust last read index if necessary
+                            if (novel.lastReadChapterIndex === index) {
+                                novel.lastReadChapterIndex = -1; // Reset if deleted chapter was last read
+                            } else if (novel.lastReadChapterIndex > index) {
+                                novel.lastReadChapterIndex--; // Decrement if a later chapter was last read
+                            }
+                            saveNovelsMetadata(); // Persist changes
+                            renderChapterList(novelId); // Re-render the list
+                            loadNovelInfoPage(novelId); // Update the "Last Read" display
+                            console.log(`Deleted chapter ${index} for novel ${novelId}`);
+                        } else {
+                            // This case might occur if OPFS fails but user confirms
+                            alert(`Failed to delete the file for chapter "${chapterTitle}". Metadata was not removed.`);
+                        }
+                    } catch(error) {
+                         console.error(`Error during chapter deletion process:`, error);
+                         alert(`An error occurred while trying to delete the chapter "${chapterTitle}".`);
                     }
                 }
             });
+
+            // Append buttons to actions container
+            itemActions.appendChild(editBtn);
+            itemActions.appendChild(downloadBtn);
+            itemActions.appendChild(deleteBtn);
+
+            // Add navigation listener to the title container
+            const navigateToReader = () => {
+                currentChapterIndex = index;
+                showPage('reader-page');
+            };
+            itemContent.addEventListener('click', navigateToReader);
+            itemContent.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigateToReader();
+                }
+            });
+
+            // Append content and actions to the list item
+            li.appendChild(itemContent);
+            li.appendChild(itemActions);
+
+            // Append the list item to the chapter list
             chapterListEl.appendChild(li);
         });
     }
 
+    // --- Helper function to escape HTML special characters ---
+    function escapeHTML(str) {
+        if (!str) return '';
+        const p = document.createElement("p");
+        p.textContent = str;
+        return p.innerHTML; // Uses browser's built-in escaping
+        // Manual alternative:
+        // return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+
     async function loadReaderPage(novelId, chapterIndex) {
         const chapter = findChapter(novelId, chapterIndex);
         const novel = findNovel(novelId);
+
+        // Validate data presence
         if (!chapter || !novel) {
             console.error(`Reader load failed: Novel (${novelId}) or Chapter (${chapterIndex}) not found.`);
-            readerContent.innerHTML = '<p>Error: Could not load chapter data.</p>';
             readerChapterTitle.textContent = "Error";
+            readerContent.innerHTML = '<p style="color: var(--danger-color);">Error: Could not load chapter data. Novel or chapter metadata missing.</p>';
+            // Disable navigation buttons on error
             prevChapterBtn.disabled = true; prevChapterBtn.setAttribute('aria-disabled', 'true');
             nextChapterBtn.disabled = true; nextChapterBtn.setAttribute('aria-disabled', 'true');
-            return;
+            return; // Stop execution
         }
+
+        // Update chapter title
         readerChapterTitle.textContent = chapter.title || `Chapter ${chapterIndex + 1}`;
-        readerContent.innerHTML = '<p>Loading...</p>';
-        novel.lastReadChapterIndex = chapterIndex;
-        saveNovelsMetadata();
-        if (document.getElementById('novel-info-page')) loadNovelInfoPage(novelId);
-        const content = await readChapterContent(novelId, chapterIndex);
-        if (content.startsWith("Error:")) {
-            readerContent.innerHTML = `<p style="color: var(--danger-color);">${content}</p>`;
-        } else {
-            readerContent.innerHTML = `<p>${content.replace(/\n/g, '</p><p>')}</p>`; // Simple paragraph wrap
+
+        // Show loading state
+        readerContent.innerHTML = '<p>Loading chapter content...</p>';
+
+        // Update last read chapter in metadata (do this before async read)
+        if (novel.lastReadChapterIndex !== chapterIndex) {
+             novel.lastReadChapterIndex = chapterIndex;
+            saveNovelsMetadata();
+            // If the info page is currently displayed elsewhere (unlikely but possible), update its last read display
+            // This check is minor optimization; loadNovelInfoPage is more robust if needed later.
+            if (document.getElementById('novel-info-page') && findNovel(novelId)) {
+                 // Maybe update only the last read span for performance?
+                 loadNovelInfoPage(novelId); // Reload info page state if needed
+            }
         }
+
+
+        // Read chapter content from OPFS
+        const rawContent = await readChapterContent(novelId, chapterIndex);
+
+        // Process and display content
+        if (rawContent.startsWith("Error:")) {
+            // Display file read errors clearly
+            readerContent.innerHTML = `<p style="color: var(--danger-color);">${escapeHTML(rawContent)}</p>`;
+        } else {
+            // *** HTML Escaping Fix ***
+            // 1. Escape the entire raw content first to prevent injection
+            const escapedContent = escapeHTML(rawContent);
+            // 2. Then, replace newlines with paragraph tags for formatting
+            // Ensure the first line also gets wrapped in <p>
+            const formattedContent = `<p>${escapedContent.replace(/\n+/g, '</p><p>')}</p>`;
+            // Replace potential empty paragraphs created by multiple newlines
+            readerContent.innerHTML = formattedContent.replace(/<p><\/p>/g, '');
+        }
+
+        // Update navigation buttons state
         prevChapterBtn.disabled = (chapterIndex <= 0);
-        prevChapterBtn.setAttribute('aria-disabled', prevChapterBtn.disabled ? 'true' : 'false');
+        prevChapterBtn.setAttribute('aria-disabled', String(prevChapterBtn.disabled));
         nextChapterBtn.disabled = (chapterIndex >= novel.chapters.length - 1);
-        nextChapterBtn.setAttribute('aria-disabled', nextChapterBtn.disabled ? 'true' : 'false');
-        readerContentContainer.scrollTo(0, 0);
+        nextChapterBtn.setAttribute('aria-disabled', String(nextChapterBtn.disabled));
+
+        // Scroll reader content area to top
+        readerMainContent.scrollTop = 0;
     }
+
 
     // --- Modal Handling ---
     function closeModal(modalElement) {
-        if (!modalElement) return;
+        if (!modalElement || modalElement.style.display === 'none') return; // Already closed or closing
+
         modalElement.classList.add('closing');
-        setTimeout(() => {
+
+        // Use 'animationend' event for smoother closing synchronized with animation
+        const animationHandler = () => {
             modalElement.style.display = 'none';
             modalElement.classList.remove('closing');
-        }, MODAL_CLOSE_DELAY);
+            modalElement.removeEventListener('animationend', animationHandler);
+        };
+         modalElement.addEventListener('animationend', animationHandler);
+
+        // Fallback timeout in case animationend doesn't fire (e.g., reduced motion settings)
+        setTimeout(() => {
+             if (modalElement.classList.contains('closing')) {
+                 animationHandler(); // Force close if animation didn't finish
+             }
+        }, MODAL_CLOSE_DELAY + 50); // Slightly longer than animation
     }
 
     // --- Novel Modal ---
     function openNovelModal(novelIdToEdit = null) {
         const isEditing = !!novelIdToEdit;
         const novel = isEditing ? findNovel(novelIdToEdit) : null;
+
         if (isEditing && !novel) {
-            alert("Error: Novel to edit not found."); return;
+            console.error(`Cannot edit novel: ID ${novelIdToEdit} not found.`);
+            alert("Error: The novel you are trying to edit could not be found.");
+            return; // Stop if novel doesn't exist
         }
+
+        // Set modal title
         novelModalTitleHeading.textContent = isEditing ? "Edit Novel Details" : "Add New Novel";
-        novelModalIdInput.value = novelIdToEdit || '';
+
+        // Populate form fields
+        novelModalIdInput.value = novelIdToEdit || ''; // Store ID if editing
         novelModalTitleInput.value = novel?.title || '';
         novelModalAuthorInput.value = novel?.author || '';
         novelModalGenreInput.value = novel?.genre || '';
         novelModalDescriptionInput.value = novel?.description || '';
+
+        // Display the modal
         novelModal.style.display = 'block';
+        // Focus the first input field for accessibility
         novelModalTitleInput.focus();
     }
 
-    function closeNovelModal() { closeModal(novelModal); }
+    function closeNovelModal() {
+        closeModal(novelModal);
+        // Optional: Reset form fields after closing animation
+        // setTimeout(() => {
+        //     novelModalIdInput.value = '';
+        //     novelModalTitleInput.value = '';
+        //     // ... reset other fields ...
+        // }, MODAL_CLOSE_DELAY);
+    }
 
     function saveNovelFromModal() {
-        const id = novelModalIdInput.value;
+        const id = novelModalIdInput.value; // Will be empty if adding new
         const title = novelModalTitleInput.value.trim();
-        if (!title) { alert("Novel Title required."); novelModalTitleInput.focus(); return; }
+
+        // Basic validation
+        if (!title) {
+            alert("Novel Title is required.");
+            novelModalTitleInput.focus(); // Focus the problematic field
+            return; // Stop saving
+        }
+
+        // Get other fields
         const author = novelModalAuthorInput.value.trim();
         const genre = novelModalGenreInput.value.trim();
-        const description = novelModalDescriptionInput.value;
-        let novelToUpdate;
+        const description = novelModalDescriptionInput.value.trim(); // Trim description too
+
         const isEditing = !!id;
+        let novelToUpdate;
+
         if (isEditing) {
             novelToUpdate = findNovel(id);
-            if (!novelToUpdate) { alert("Error: Could not find novel to update."); closeNovelModal(); return; }
+            if (!novelToUpdate) {
+                // Should not happen if openNovelModal worked correctly, but good failsafe
+                console.error(`Save Error: Novel with ID ${id} not found during update.`);
+                alert("Error: Could not find the novel to update. Please try again.");
+                closeNovelModal();
+                return;
+            }
+            // Update existing novel object
             Object.assign(novelToUpdate, { title, author, genre, description });
+            console.log(`Updated novel: ${id}`);
         } else {
-            novelToUpdate = { id: crypto.randomUUID(), title, author, genre, description, chapters: [], lastReadChapterIndex: -1 };
-            novelsMetadata.push(novelToUpdate);
-            currentNovelId = novelToUpdate.id;
+            // Create new novel object
+            novelToUpdate = {
+                id: crypto.randomUUID(), // Generate a new unique ID
+                title,
+                author,
+                genre,
+                description,
+                chapters: [], // Initialize with empty chapters array
+                lastReadChapterIndex: -1 // Initialize last read index
+            };
+            novelsMetadata.push(novelToUpdate); // Add to the main array
+            currentNovelId = novelToUpdate.id; // Set as current novel for potential navigation
+            console.log(`Added new novel: ${novelToUpdate.id}`);
         }
-        saveNovelsMetadata();
+
+        saveNovelsMetadata(); // Persist changes to localStorage
         closeNovelModal();
-        renderNovelList();
-        if (isEditing) { if (document.getElementById('novel-info-page').classList.contains('active')) loadNovelInfoPage(id); }
-        else { showPage('novel-info-page'); }
+        renderNovelList(); // Update the list on the home page
+
+        // Update or navigate after saving
+        if (isEditing) {
+            // If the info page for this novel is currently active, reload it
+            if (document.getElementById('novel-info-page').classList.contains('active') && currentNovelId === id) {
+                loadNovelInfoPage(id);
+            }
+        } else {
+            // If adding a new novel, navigate to its info page
+            showPage('novel-info-page');
+        }
     }
+
 
     // --- Chapter Modal ---
     async function openChapterModal(novelId, chapterIndex = null) {
         const novel = findNovel(novelId);
-        if (!novel) { alert("Error: Novel not found."); return; }
-        const isEditing = chapterIndex !== null;
+        if (!novel) {
+            console.error(`Cannot open chapter modal: Novel ID ${novelId} not found.`);
+            alert("Error: Could not find the associated novel.");
+            return;
+        }
+
+        const isEditing = chapterIndex !== null && chapterIndex >= 0;
         const chapter = isEditing ? findChapter(novelId, chapterIndex) : null;
-        if (isEditing && chapter === null) { alert("Error: Chapter to edit not found."); return; }
+
+        if (isEditing && chapter === null) {
+            console.error(`Cannot edit chapter: Index ${chapterIndex} invalid for novel ${novelId}.`);
+            alert("Error: The chapter you are trying to edit could not be found.");
+            return;
+        }
+
+        // Set modal title
         chapterModalTitleHeading.textContent = isEditing ? "Edit Chapter" : "Add New Chapter";
+
+        // Store context
         chapterModalNovelIdInput.value = novelId;
-        chapterModalIndexInput.value = chapterIndex !== null ? chapterIndex : '';
+        chapterModalIndexInput.value = isEditing ? chapterIndex : ''; // Store index if editing
+
+        // Set chapter title input
         chapterModalTitleInput.value = chapter?.title || '';
+        // Clear and disable content textarea initially
+        chapterModalContentInput.value = '';
+        chapterModalContentInput.disabled = true;
+
+        // Display the modal first
+        chapterModal.style.display = 'block';
+        chapterModalTitleInput.focus(); // Focus title input first
+
+        // Load content asynchronously AFTER modal is visible
         if (isEditing) {
-            chapterModalContentInput.value = 'Loading content...';
-            chapterModalContentInput.disabled = true;
-            chapterModal.style.display = 'block';
+            chapterModalContentInput.value = 'Loading chapter content...'; // Show loading indicator
             try {
                 const rawContent = await readChapterContent(novelId, chapterIndex);
                 if (rawContent.startsWith("Error:")) {
-                     chapterModalContentInput.value = `Load error.\n${rawContent}\n\nYou can edit title or save new content.`;
-                     chapterModalContentInput.disabled = false;
+                     // Handle content load error, allow editing title or saving new content
+                     chapterModalContentInput.value = `Could not load existing content.\n${rawContent}\n\nYou can still edit the title or enter new content below and save.`;
+                     chapterModalContentInput.disabled = false; // Enable editing despite load error
                 } else {
+                    // Successfully loaded content
                     chapterModalContentInput.value = rawContent;
-                    chapterModalContentInput.disabled = false;
+                    chapterModalContentInput.disabled = false; // Enable editing
                 }
             } catch(e) {
-                chapterModalContentInput.value = `Error loading: ${e.message}`;
-                chapterModalContentInput.disabled = true;
+                // Catch potential errors from readChapterContent promise itself
+                console.error(`Error loading chapter content in modal:`, e);
+                chapterModalContentInput.value = `Critical error loading content: ${e.message}`;
+                // Keep disabled if critical error occurred
             }
         } else {
-            chapterModalContentInput.value = '';
+            // If adding new chapter, just enable the empty textarea
             chapterModalContentInput.disabled = false;
-            chapterModal.style.display = 'block';
         }
-        chapterModalTitleInput.focus();
     }
+
 
     function closeChapterModal() {
         closeModal(chapterModal);
-        chapterModalTitleInput.value = '';
-        chapterModalContentInput.value = '';
-        chapterModalNovelIdInput.value = '';
-        chapterModalIndexInput.value = '';
-        chapterModalContentInput.disabled = false;
+        // Reset fields after closing to prevent flicker
+        // setTimeout(() => {
+        //     chapterModalTitleInput.value = '';
+        //     chapterModalContentInput.value = '';
+        //     chapterModalNovelIdInput.value = '';
+        //     chapterModalIndexInput.value = '';
+        //     chapterModalContentInput.disabled = false;
+        // }, MODAL_CLOSE_DELAY);
     }
 
     async function saveChapterFromModal() {
         const novelId = chapterModalNovelIdInput.value;
         const indexStr = chapterModalIndexInput.value;
         const title = chapterModalTitleInput.value.trim();
-        const content = chapterModalContentInput.value;
+        const content = chapterModalContentInput.value; // Get content as is (no trim usually)
         const novel = findNovel(novelId);
 
-        if (!title) { alert("Chapter Title required."); chapterModalTitleInput.focus(); return; }
-        if (!content && !confirm("Content empty. Save anyway?")) { chapterModalContentInput.focus(); return; }
-        if (!novel) { alert("Error: Associated novel missing."); closeChapterModal(); return; }
+        // --- Validation ---
+        if (!title) {
+            alert("Chapter Title is required.");
+            chapterModalTitleInput.focus();
+            return;
+        }
+        // Warn if content is empty, but allow saving if confirmed
+        if (!content && !confirm("The chapter content is empty. Do you want to save it anyway?")) {
+            chapterModalContentInput.focus();
+            return;
+        }
+        if (!novel) {
+            console.error(`Chapter save failed: Associated novel ${novelId} missing.`);
+            alert("Error: Could not find the novel this chapter belongs to.");
+            closeChapterModal();
+            return;
+        }
 
         const isNewChapter = indexStr === '';
         const chapterIndex = isNewChapter ? novel.chapters.length : parseInt(indexStr, 10);
 
+        // Validate index if editing
         if (!isNewChapter && (isNaN(chapterIndex) || chapterIndex < 0 || chapterIndex >= novel.chapters.length)) {
-            alert("Error: Invalid chapter index."); closeChapterModal(); return;
+            console.error(`Chapter save failed: Invalid index ${indexStr} for novel ${novelId}.`);
+            alert("Error: Invalid chapter index provided for editing.");
+            closeChapterModal();
+            return;
         }
 
+        // --- Prepare Chapter Metadata ---
         let chapterData;
-        let addedTemporarily = false;
+        let temporaryMetadataAdded = false; // Flag to track if we need to rollback metadata on save failure
 
+        if (isNewChapter) {
+            // Create new metadata object (filename will be set by saveChapterContent)
+            chapterData = { title: title, opfsFileName: '' };
+            // Add *temporarily* to the array to allow saveChapterContent to find it
+            novel.chapters.push(chapterData);
+            temporaryMetadataAdded = true;
+            console.log(`Temporarily added metadata for new chapter at index ${chapterIndex}`);
+        } else {
+            // Get existing metadata object
+            chapterData = novel.chapters[chapterIndex];
+            // Update title in existing metadata
+            chapterData.title = title;
+             console.log(`Updating metadata title for chapter ${chapterIndex}`);
+        }
+
+        // --- Attempt to Save Content to OPFS ---
         try {
-            if (isNewChapter) {
-                chapterData = { title: title, opfsFileName: '' };
-                novel.chapters.push(chapterData); // Add metadata temporarily
-                addedTemporarily = true;
-            } else {
-                chapterData = novel.chapters[chapterIndex];
-                chapterData.title = title;
-            }
+            // This function saves the file AND updates chapterData.opfsFileName internally
+            await saveChapterContent(novelId, chapterIndex, content);
 
-            await saveChapterContent(novelId, chapterIndex, content); // Saves file & updates opfsFileName
-            saveNovelsMetadata(); // Persist metadata changes
+            // --- Persist Metadata Changes ---
+            // If OPFS save was successful, save the updated metadata array
+            saveNovelsMetadata();
+            console.log(`Successfully saved chapter ${chapterIndex} file and metadata for novel ${novelId}.`);
+
+            // --- UI Updates ---
             closeChapterModal();
-            renderChapterList(novelId);
-            console.log(`Saved chapter ${chapterIndex} for novel ${novelId}.`);
+            renderChapterList(novelId); // Update the chapter list on the info page
 
         } catch (error) {
-            console.error(`Failed save chapter ${chapterIndex}, novel ${novelId}:`, error);
-            alert(`Chapter save failed: ${error.message}`);
-            if (addedTemporarily) {
-                novel.chapters.pop(); // Rollback temporary metadata add
-                console.log("Rolled back temp metadata add.");
+            // --- Handle Save Failure ---
+            console.error(`Failed to save chapter ${chapterIndex} content for novel ${novelId}:`, error);
+            alert(`Chapter save failed: ${error.message}\n\nPlease check storage permissions or try again.`);
+
+            // Rollback temporary metadata addition if saving a *new* chapter failed
+            if (temporaryMetadataAdded) {
+                novel.chapters.pop(); // Remove the placeholder metadata
+                console.log("Rolled back temporary metadata addition due to save failure.");
             }
+            // Note: If editing failed, we leave the title change in memory,
+            // but it won't be persisted by saveNovelsMetadata() yet.
+            // The user would need to try saving again.
         }
     }
 
     // --- Reader Settings Modal ---
     function openReaderSettingsModal() {
+        // Ensure dropdowns reflect current settings when opening
         fontSelect.value = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
         fontSizeSelect.value = localStorage.getItem(FONT_SIZE_KEY) || DEFAULT_FONT_SIZE;
         readerSettingsModal.style.display = 'block';
     }
-    function closeReaderSettingsModal() { closeModal(readerSettingsModal); }
+
+    function closeReaderSettingsModal() {
+        closeModal(readerSettingsModal);
+    }
 
     // --- Import / Export ---
-    async function exportAllData() {
-        if (!novelsMetadata?.length) { alert("No novels to export."); return; }
-        if (!window.CompressionStream || !opfsRoot) { alert("Export failed: Browser support missing."); return; }
-        exportButton.textContent = '📤';
+     async function exportAllData() {
+        if (!novelsMetadata?.length) {
+            alert("There are no novels to export.");
+            return;
+        }
+        if (!window.CompressionStream || !navigator.storage?.getDirectory) {
+             // Check for essential APIs
+             alert("Export failed: Your browser does not support the required features (CompressionStream or OPFS).");
+            return;
+        }
+        if (!opfsRoot) {
+             alert("Export failed: Storage system is not ready. Please try again later.");
+             return;
+        }
+
+        // Update button state
+        const originalButtonText = exportButton.textContent;
+        const originalButtonLabel = exportButton.ariaLabel;
+        exportButton.textContent = '📤'; // Using emoji for visual feedback
         exportButton.disabled = true;
-        exportButton.ariaLabel = 'Exporting...';
+        exportButton.ariaLabel = 'Exporting novels...';
+
         try {
-            const exportObject = { version: 1, metadata: [], chapters: {} };
-            let chapterReadErrors = 0;
-            console.log("Starting export...");
+            console.log("Starting data export process...");
+            const exportObject = {
+                version: 1, // Versioning for future compatibility
+                metadata: [], // Will hold sanitized metadata
+                chapters: {} // Will hold chapter content { novelId: { chapterIndex: content } }
+            };
+
+            // Deep copy and potentially sanitize metadata for export
+            // This prevents modification of the live data and removes runtime states if any
             exportObject.metadata = JSON.parse(JSON.stringify(novelsMetadata));
-            for (const novel of novelsMetadata) {
-                exportObject.chapters[novel.id] = {};
-                if (novel.chapters?.length) {
+
+            let chapterReadErrors = 0;
+            let successfullyReadChapters = 0;
+
+            // Iterate through novels and their chapters to read content
+            for (const novel of exportObject.metadata) { // Iterate the copied metadata
+                 exportObject.chapters[novel.id] = {}; // Initialize chapter object for this novel
+                 if (novel.chapters?.length) {
+                    console.log(`Exporting ${novel.chapters.length} chapters for novel: ${novel.title}`);
                     for (let i = 0; i < novel.chapters.length; i++) {
                         try {
+                            // Use the original novel ID from the loop to read content
                             const content = await readChapterContent(novel.id, i);
-                            if (content.startsWith("Error:")) throw new Error(content);
-                            exportObject.chapters[novel.id][i] = content;
+                             if (content.startsWith("Error:")) {
+                                // If readChapterContent indicates an error (e.g., file not found)
+                                throw new Error(content);
+                             }
+                             exportObject.chapters[novel.id][i] = content;
+                             successfullyReadChapters++;
                         } catch (readError) {
-                            console.error(`Export Read Error Ch ${i} (Novel ${novel.id}):`, readError);
-                            exportObject.chapters[novel.id][i] = `###EXPORT_READ_ERROR### ${readError.message}`;
+                            console.error(`Export Read Error - Novel ${novel.id}, Chapter ${i}:`, readError);
+                            // Store error placeholder instead of content
+                            exportObject.chapters[novel.id][i] = `###EXPORT_READ_ERROR### Could not read chapter content: ${readError.message}`;
                             chapterReadErrors++;
                         }
                     }
                 }
             }
-            if (chapterReadErrors > 0) alert(`Warning: ${chapterReadErrors} chapter(s) couldn't be read.`);
+
+            console.log(`Chapter export summary: ${successfullyReadChapters} read successfully, ${chapterReadErrors} failed.`);
+            if (chapterReadErrors > 0) {
+                 // Inform user about partial export
+                 alert(`Warning: ${chapterReadErrors} chapter(s) could not be read and will be missing or marked as errors in the backup file.`);
+            }
+
+            // Convert the entire export object to JSON
             const jsonString = JSON.stringify(exportObject);
+
+            // Create a Blob from the JSON string
             const dataBlob = new Blob([jsonString], { type: 'application/json' });
-            const compressedStream = dataBlob.stream().pipeThrough(new CompressionStream('gzip'));
-            const compressedBlob = await new Response(compressedStream).blob();
+
+            // Compress the Blob using GZip
+             const compressedStream = dataBlob.stream().pipeThrough(new CompressionStream('gzip'));
+             const compressedBlob = await new Response(compressedStream).blob(); // Get the compressed Blob
+
+            // Create a download link
             const url = URL.createObjectURL(compressedBlob);
             const a = document.createElement('a');
             a.href = url;
-            const timestamp = new Date().toISOString().replace(/[:T.-]/g, '').slice(0, 14);
-            a.download = `novels_backup_${timestamp}.novelarchive.gz`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            // Generate a timestamped filename
+            const timestamp = new Date().toISOString().replace(/[:T.-]/g, '').slice(0, 14); // YYYYMMDDHHMMSS
+            a.download = `novels_backup_${timestamp}.novelarchive.gz`; // Specific extension
+
+            // Trigger the download
+            document.body.appendChild(a); // Required for Firefox
+            a.click();
+
+            // Clean up
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            console.log("Export complete.");
-            alert("Export complete! File downloading.");
+
+            console.log("Export complete. File download initiated.");
+            alert("Export complete! Your backup file should be downloading now.");
+
         } catch (error) {
-            console.error("Export failed:", error); alert(`Export failed: ${error.message}`);
+            console.error("Export process failed:", error);
+            alert(`Export failed: ${error.message}`);
         } finally {
-            exportButton.textContent = '📤'; exportButton.disabled = false; exportButton.ariaLabel = 'Export All Novels';
+            // Restore button state regardless of success or failure
+            exportButton.textContent = originalButtonText;
+            exportButton.disabled = false;
+            exportButton.ariaLabel = originalButtonLabel;
         }
     }
 
+
     function triggerImport() {
-        if (!window.DecompressionStream || !opfsRoot) { alert("Import failed: Browser support missing."); return; }
-        if (novelsMetadata.length > 0 || localStorage.length > 2) { if (!confirm('Import replaces current data.\nContinue?')) return; }
+        if (!window.DecompressionStream || !navigator.storage?.getDirectory) {
+            alert("Import failed: Your browser does not support the required features (DecompressionStream or OPFS).");
+            return;
+        }
+         if (!opfsRoot) {
+             alert("Import failed: Storage system is not ready. Please try again later.");
+             return;
+         }
+
+        // Warn user about data replacement
+        if (novelsMetadata.length > 0 || localStorage.length > 2) { // Check if any data likely exists
+            if (!confirm('Importing a backup will REPLACE all current novels, chapters, and settings.\n\nAre you sure you want to continue?')) {
+                return; // User cancelled
+            }
+        }
+        // Trigger the hidden file input
         importFileInput.click();
     }
 
-    async function importData(file) {
-        if (!file) return;
-        if (!file.name.endsWith('.novelarchive.gz')) { alert("Invalid file type."); importFileInput.value = null; return; }
-        if (!opfsRoot) { alert("Import failed: Storage not ready."); importFileInput.value = null; return; }
-        importButton.textContent = '📥'; importButton.disabled = true; importButton.ariaLabel = 'Importing...'; importFileInput.disabled = true;
-        console.log(`Starting import: ${file.name}`);
+     async function importData(file) {
+        if (!file) return; // No file selected
+
+        // Validate file type (basic check)
+        if (!file.name.endsWith('.novelarchive.gz')) {
+            alert("Invalid file type. Please select a '.novelarchive.gz' backup file.");
+            importFileInput.value = null; // Reset file input
+            return;
+        }
+
+         if (!opfsRoot) { // Double-check storage readiness
+             alert("Import failed: Storage system is not ready.");
+             importFileInput.value = null;
+             return;
+         }
+
+        // Update button state to indicate processing
+        const originalButtonText = importButton.textContent;
+        const originalButtonLabel = importButton.ariaLabel;
+        importButton.textContent = '📥'; // Using emoji for visual feedback
+        importButton.disabled = true;
+        importButton.ariaLabel = 'Importing backup...';
+        importFileInput.disabled = true; // Prevent selecting another file during import
+
+        console.log(`Starting import from file: ${file.name}`);
+        let previousState = null; // To store old data for potential rollback
+
         try {
+             // --- Backup current state (optional but recommended) ---
+             console.log("Backing up current state before import...");
+             previousState = {
+                 metadata: JSON.parse(localStorage.getItem(METADATA_KEY) || '[]'),
+                 theme: localStorage.getItem(THEME_KEY),
+                 font: localStorage.getItem(FONT_KEY),
+                 fontSize: localStorage.getItem(FONT_SIZE_KEY),
+                 // Note: Backing up OPFS is complex, usually skipped. Rollback focuses on metadata/settings.
+             };
+
+
+            // --- Decompress and Parse ---
+            console.log("Decompressing and parsing backup file...");
             const decompressedStream = file.stream().pipeThrough(new DecompressionStream('gzip'));
-            const jsonString = await new Response(decompressedStream).text();
-            const importObject = JSON.parse(jsonString);
-            if (!importObject || typeof importObject !== 'object' || !Array.isArray(importObject.metadata) || typeof importObject.chapters !== 'object') throw new Error("Invalid backup format.");
-            if (importObject.version !== 1) console.warn(`Importing v${importObject.version}.`);
-            console.log("Clearing existing data...");
-            localStorage.removeItem(METADATA_KEY); novelsMetadata = [];
-            if (opfsRoot) {
-                 try { const entries = []; for await (const entry of opfsRoot.values()) { if (entry.kind === 'directory') entries.push(entry.name); }
-                     await Promise.all(entries.map(name => opfsRoot.removeEntry(name, { recursive: true }).catch(err => console.warn(`Old OPFS clear error ${name}:`, err)) ));
-                     console.log("Cleared OPFS.");
-                 } catch (clearError) { console.error("OPFS clear error:", clearError); alert("Warning: Couldn't fully clear old data."); }
+            const jsonString = await new Response(decompressedStream).text(); // Read stream as text
+            const importObject = JSON.parse(jsonString); // Parse JSON text
+
+            // --- Validate Import Data Structure ---
+            if (!importObject || typeof importObject !== 'object' ||
+                !Array.isArray(importObject.metadata) || typeof importObject.chapters !== 'object') {
+                throw new Error("Invalid backup file format. Required metadata or chapters structure is missing.");
             }
-            console.log("Restoring data...");
-            let importedNovelsCount = 0; let chapterSaveErrors = 0;
-            novelsMetadata = importObject.metadata.map(novel => ({ id: novel.id || crypto.randomUUID(), title: novel.title || 'Untitled Novel', author: novel.author || '', genre: novel.genre || '', description: novel.description || '', chapters: Array.isArray(novel.chapters) ? novel.chapters.map(ch => ({ title: ch.title || 'Untitled Chapter', opfsFileName: '' })) : [], lastReadChapterIndex: (typeof novel.lastReadChapterIndex === 'number' && novel.lastReadChapterIndex >= -1) ? novel.lastReadChapterIndex : -1, }));
+            // Log version being imported
+            console.log(`Backup file version: ${importObject.version || 'Unknown'}`);
+            if (importObject.version !== 1) {
+                console.warn(`Importing data from an potentially incompatible version (${importObject.version}). Proceeding with caution.`);
+                // Future: Add migration logic based on version here
+            }
+
+            // --- Clear Existing Data ---
+            console.log("Clearing existing application data...");
+            // Clear localStorage
+            localStorage.removeItem(METADATA_KEY);
+            // Keep settings for now, restore later if import fails
+            novelsMetadata = []; // Clear in-memory array
+
+            // Clear OPFS (similar to deleteAllData, but adapted for import context)
+             if (opfsRoot) {
+                let opfsClearFailed = false;
+                try {
+                    const entriesToRemove = [];
+                     if (opfsRoot.values) { // Standard API
+                         for await (const entry of opfsRoot.values()) { if (entry.kind === 'directory') entriesToRemove.push(entry.name); }
+                     } else if (opfsRoot.createReader) { // Fallback API
+                         await new Promise((resolve, reject) => {
+                             const dirReader = opfsRoot.createReader();
+                             dirReader.readEntries((entries) => { entries.forEach(e => { if (e.isDirectory) entriesToRemove.push(e.name); }); resolve(); }, reject);
+                         });
+                     }
+                     console.log(`Found old OPFS dirs to remove: ${entriesToRemove.join(', ')}`);
+                    await Promise.all(entriesToRemove.map(name => {
+                        if (opfsRoot.removeEntry) { // Standard API
+                             return opfsRoot.removeEntry(name, { recursive: true }).catch(err => { console.warn(`Old OPFS clear error ${name}:`, err); opfsClearFailed = true; });
+                         } else if (opfsRoot.getDirectory) { // Fallback API
+                            return new Promise((resolve) => {
+                                opfsRoot.getDirectory(name, {}, (dirEntry) => dirEntry.removeRecursively(resolve, () => { console.warn(`Fallback Old OPFS clear error ${name}`); opfsClearFailed = true; resolve(); }), () => resolve()); // Resolve even if not found
+                             });
+                         }
+                         return Promise.resolve(); // Skip if no known removal method
+                     }));
+                    if (opfsClearFailed) console.warn("Could not fully clear old OPFS data."); else console.log("Cleared old OPFS directories.");
+                 } catch (clearError) { console.error("OPFS clearing error during import:", clearError); alert("Warning: Could not fully clear old data before import."); }
+            }
+
+            // --- Restore Data from Import Object ---
+            console.log("Restoring novels and chapters from backup...");
+            let importedNovelsCount = 0;
+            let chapterSaveErrors = 0;
+
+             // Sanitize and map imported metadata
+             novelsMetadata = importObject.metadata.map(novel => ({
+                id: novel.id || crypto.randomUUID(), // Ensure ID
+                title: novel.title || 'Untitled Novel',
+                author: novel.author || '',
+                genre: novel.genre || '',
+                description: novel.description || '',
+                // Create chapter metadata stubs - opfsFileName will be filled by saveChapterContent
+                chapters: Array.isArray(novel.chapters) ? novel.chapters.map(ch => ({
+                    title: ch.title || 'Untitled Chapter',
+                    opfsFileName: '' // Initialize as empty, will be set on successful save
+                 })) : [],
+                lastReadChapterIndex: (typeof novel.lastReadChapterIndex === 'number' && novel.lastReadChapterIndex >= -1) ? novel.lastReadChapterIndex : -1,
+            }));
+
+            // Save chapter content to OPFS
             for (const novel of novelsMetadata) {
                 const novelChapterData = importObject.chapters[novel.id];
                 if (novelChapterData && typeof novelChapterData === 'object') {
-                    for (let i = 0; i < novel.chapters.length; i++) {
-                        const content = novelChapterData[i]; const chapterMeta = novel.chapters[i];
+                     for (let i = 0; i < novel.chapters.length; i++) {
+                        const content = novelChapterData[i];
+                        const chapterMeta = novel.chapters[i]; // The metadata stub created above
+
                         if (typeof content === 'string' && !content.startsWith('###EXPORT_READ_ERROR###')) {
-                            try { await saveChapterContent(novel.id, i, content); } catch (saveError) { console.error(`Import Save Err Ch ${i} (Novel ${novel.id}):`, saveError); chapterSaveErrors++; chapterMeta.opfsFileName = ''; }
-                        } else if (content?.startsWith('###EXPORT_READ_ERROR###')) { console.warn(`Skip Ch ${i} (Novel ${novel.id}) due to export error.`); chapterMeta.opfsFileName = '';
-                        } else { console.warn(`Missing/invalid Ch ${i} (Novel ${novel.id}). Saving empty.`); try { await saveChapterContent(novel.id, i, ''); } catch(saveError) { console.error(`Import Save Empty Ch ${i} (Novel ${novel.id}):`, saveError); chapterSaveErrors++; chapterMeta.opfsFileName = ''; } }
+                            // Valid content found, attempt to save
+                            try {
+                                // saveChapterContent saves file and updates chapterMeta.opfsFileName
+                                await saveChapterContent(novel.id, i, content);
+                            } catch (saveError) {
+                                console.error(`Import Save Error - Novel ${novel.id}, Chapter ${i}:`, saveError);
+                                chapterSaveErrors++;
+                                // Keep opfsFileName empty in metadata if save failed
+                                chapterMeta.opfsFileName = '';
+                            }
+                        } else if (content?.startsWith('###EXPORT_READ_ERROR###')) {
+                            // Chapter had read error during export, skip saving content
+                            console.warn(`Skipping content import for Novel ${novel.id}, Chapter ${i} due to previous export error.`);
+                            chapterMeta.opfsFileName = ''; // Ensure no filename is associated
+                        } else {
+                            // Missing or invalid content for this chapter index
+                             console.warn(`Missing or invalid content for Novel ${novel.id}, Chapter ${i}. Saving as empty.`);
+                             try {
+                                 await saveChapterContent(novel.id, i, ''); // Save empty content
+                             } catch (saveEmptyError) {
+                                 console.error(`Import Save Empty Error - Novel ${novel.id}, Chapter ${i}:`, saveEmptyError);
+                                 chapterSaveErrors++;
+                                 chapterMeta.opfsFileName = '';
+                             }
+                        }
                     }
-                } else { console.warn(`No chapter data for Novel ${novel.id}.`); novel.chapters.forEach(ch => ch.opfsFileName = ''); }
+                } else {
+                     console.warn(`No chapter content data found in backup for Novel ${novel.id}. Chapters will be empty.`);
+                     // Ensure all chapter metadata for this novel has empty filename
+                     novel.chapters.forEach(ch => ch.opfsFileName = '');
+                }
                 importedNovelsCount++;
             }
-            saveNovelsMetadata(); loadSettings(); renderNovelList(); showPage('home-page');
-            let successMessage = `Import ok! ${importedNovelsCount} novel(s) loaded.`;
-            if (chapterSaveErrors > 0) successMessage += `\nWarning: ${chapterSaveErrors} chapter(s) failed import.`;
-            alert(successMessage); console.log("Import finished.");
+
+            // --- Finalize Import ---
+            saveNovelsMetadata(); // Save the restored and processed metadata
+            loadSettings(); // Reload settings (in case they were cleared or need refresh)
+            renderNovelList(); // Update UI
+            showPage('home-page'); // Navigate home
+
+            // --- Report Success/Partial Success ---
+            let successMessage = `Import successful! ${importedNovelsCount} novel(s) loaded.`;
+            if (chapterSaveErrors > 0) {
+                successMessage += `\n\nWarning: ${chapterSaveErrors} chapter(s) could not be saved correctly due to errors. Their content might be missing or empty.`;
+            }
+            alert(successMessage);
+            console.log("Import process finished.");
+
         } catch (error) {
-            console.error("Import failed:", error); alert(`Import failed: ${error.message}\nRestoring previous state...`);
-            loadNovelsMetadata(); loadSettings(); renderNovelList(); showPage('home-page');
+            // --- Handle Import Failure ---
+            console.error("Import process failed:", error);
+            alert(`Import failed: ${error.message}\n\nAttempting to restore previous state...`);
+
+            // --- Attempt Rollback ---
+            if (previousState) {
+                console.log("Rolling back to previous state...");
+                try {
+                     // Restore localStorage
+                    localStorage.setItem(METADATA_KEY, JSON.stringify(previousState.metadata));
+                    if (previousState.theme) localStorage.setItem(THEME_KEY, previousState.theme); else localStorage.removeItem(THEME_KEY);
+                    if (previousState.font) localStorage.setItem(FONT_KEY, previousState.font); else localStorage.removeItem(FONT_KEY);
+                    if (previousState.fontSize) localStorage.setItem(FONT_SIZE_KEY, previousState.fontSize); else localStorage.removeItem(FONT_SIZE_KEY);
+
+                    // Reload state from restored localStorage
+                    loadNovelsMetadata();
+                    loadSettings();
+                    renderNovelList();
+                    showPage('home-page');
+                     alert("Previous state restored.");
+                     console.log("Rollback successful.");
+                 } catch (rollbackError) {
+                    console.error("Rollback failed:", rollbackError);
+                    alert("Critical error: Could not restore previous state after import failure. Data may be lost. Please try refreshing the application.");
+                }
+            } else {
+                alert("Critical error: Could not restore previous state as it wasn't backed up.");
+                // Attempt basic reset
+                 loadNovelsMetadata(); loadSettings(); renderNovelList(); showPage('home-page');
+            }
+
         } finally {
-            importButton.textContent = '📥'; importButton.disabled = false; importButton.ariaLabel = 'Import Novels Archive'; importFileInput.disabled = false; importFileInput.value = null;
+            // --- Reset UI Elements ---
+            importButton.textContent = originalButtonText;
+            importButton.disabled = false;
+            importButton.ariaLabel = originalButtonLabel;
+            importFileInput.disabled = false;
+            importFileInput.value = null; // Clear the file input selection
         }
     }
 
+
     // --- Chapter Downloads ---
-    function sanitizeFilename(name) { return name.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, ' ').trim() || 'Untitled'; }
+    function sanitizeFilename(name) {
+        // Replace reserved characters and multiple spaces, trim result
+        return name.replace(/[<>:"/\\|?*]+/g, '_').replace(/\s+/g, ' ').trim() || 'Untitled';
+    }
+
     async function downloadChapter(novelId, chapterIndex) {
-        const chapter = findChapter(novelId, chapterIndex); const novel = findNovel(novelId);
-        if (!chapter || !novel) { console.error("Download fail data missing:", novelId, chapterIndex); alert("Data missing."); throw new Error("Data missing"); }
+        const chapter = findChapter(novelId, chapterIndex);
+        const novel = findNovel(novelId);
+
+        if (!chapter || !novel) {
+            console.error("Download failed: Novel or Chapter metadata missing.", { novelId, chapterIndex });
+            alert("Error: Could not find chapter data to download.");
+            throw new Error("Chapter or novel data missing for download."); // Throw error for bulk download handling
+        }
+
+        // Determine the filename in storage
         const opfsFileName = chapter.opfsFileName || `ch_${String(chapterIndex).padStart(5, '0')}.txt`;
+        // Create a user-friendly download filename
         const downloadName = `${sanitizeFilename(novel.title)} - Ch ${String(chapterIndex + 1).padStart(3,'0')} - ${sanitizeFilename(chapter.title)}.txt`;
-        if (!opfsRoot) { alert("Download fail: Storage unavailable."); throw new Error("OPFS unavailable"); }
+
+        if (!opfsRoot) {
+            alert("Download failed: Storage system is not available.");
+            throw new Error("OPFS not available for download.");
+        }
+
         try {
-            const novelDirHandle = await getNovelDir(novelId, false);
-            const fileHandle = await novelDirHandle.getFileHandle(opfsFileName);
-            const file = await fileHandle.getFile();
-            const url = URL.createObjectURL(file); const a = document.createElement('a');
-            a.href = url; a.download = downloadName;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url); console.log(`Download init: ${downloadName}`);
+            console.log(`Attempting to download: ${downloadName} (from ${opfsFileName})`);
+             const novelDirHandle = await getNovelDir(novelId, false); // Don't create directory
+
+             let file;
+             // Standard OPFS API
+             if (novelDirHandle.getFileHandle) {
+                 const fileHandle = await novelDirHandle.getFileHandle(opfsFileName);
+                 file = await fileHandle.getFile();
+             }
+             // Fallback (webkitFileSystem)
+             else if (novelDirHandle.getFile) {
+                 file = await new Promise((resolve, reject) => {
+                    novelDirHandle.getFile(opfsFileName, {}, (fileEntry) => {
+                        fileEntry.file(resolve, reject);
+                    }, reject);
+                 });
+             } else {
+                  throw new Error("Unsupported Directory handle for file operations.");
+              }
+
+            // Create blob URL and trigger download
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = downloadName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Clean up blob URL
+            console.log(`Download initiated successfully: ${downloadName}`);
+
         } catch (error) {
-            if (error.name === 'NotFoundError') { alert(`Download fail "${chapter.title}": File not found.`); console.warn(`Download fail: File ${opfsFileName} not found.`); }
-            else { console.error(`Download error ch ${chapterIndex}:`, error); alert(`Download fail "${chapter.title}": ${error.message}`); }
-            throw error;
+             // Handle file not found specifically
+            if (error.name === 'NotFoundError' || (error.code && error.code === FileError.NOT_FOUND_ERR)) {
+                alert(`Download failed for "${chapter.title}": The chapter file (${opfsFileName}) was not found in storage.`);
+                console.warn(`Download failed: File ${opfsFileName} not found for chapter ${chapterIndex}, novel ${novelId}.`);
+             } else {
+                 // Handle other errors
+                console.error(`Download error for chapter ${chapterIndex} (Novel ${novelId}, File ${opfsFileName}):`, error);
+                alert(`Download failed for "${chapter.title}": An error occurred (${error.message})`);
+             }
+            throw error; // Re-throw the error for bulk download handling
         }
     }
-    async function downloadAllChapters(novelId) {
-        const novel = findNovel(novelId); if (!novel?.chapters?.length) { alert("No chapters."); return; }
-        if (!confirm(`Start ${novel.chapters.length} separate downloads?`)) return;
-        const originalText = bulkDownloadBtn.textContent; bulkDownloadBtn.textContent = 'Starting...'; bulkDownloadBtn.disabled = true; bulkDownloadBtn.setAttribute('aria-disabled', 'true');
-        let successCount = 0; let errorCount = 0; const totalChapters = novel.chapters.length;
-        console.log(`Starting bulk download ${totalChapters} chaps: ${novel.title}`);
-        try {
-            for (let i = 0; i < totalChapters; i++) {
-                bulkDownloadBtn.textContent = `Downloading ${i + 1}/${totalChapters}...`;
-                try { await downloadChapter(novelId, i); successCount++; }
-                catch (e) { errorCount++; }
-                await new Promise(resolve => setTimeout(resolve, 200)); // Delay
+
+     async function downloadAllChapters(novelId) {
+        const novel = findNovel(novelId);
+        if (!novel?.chapters?.length) {
+            alert("This novel has no chapters to download.");
+            return;
+        }
+
+        const totalChapters = novel.chapters.length;
+        if (!confirm(`This will start ${totalChapters} separate file downloads, one for each chapter.\n\nDo you want to proceed?`)) {
+            return; // User cancelled
+        }
+
+        // Update button state
+        const originalText = bulkDownloadBtn.textContent;
+        bulkDownloadBtn.textContent = 'Starting...';
+        bulkDownloadBtn.disabled = true;
+        bulkDownloadBtn.setAttribute('aria-disabled', 'true');
+        bulkDownloadBtn.setAttribute('aria-live', 'polite'); // Announce progress
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        console.log(`Starting bulk download of ${totalChapters} chapters for: ${novel.title}`);
+
+        // Download chapters sequentially with a delay
+        for (let i = 0; i < totalChapters; i++) {
+            const chapter = novel.chapters[i];
+            const chapterTitle = chapter.title || `Chapter ${i + 1}`;
+            bulkDownloadBtn.textContent = `Downloading ${i + 1}/${totalChapters}... (${chapterTitle})`;
+            try {
+                await downloadChapter(novelId, i);
+                successCount++;
+             } catch (e) {
+                 // Error already alerted in downloadChapter, just count it here
+                errorCount++;
+                console.warn(`Bulk download: Failed chapter ${i} - ${chapterTitle}`);
             }
-            alert(`Bulk download finished.\nSuccess: ${successCount}\nFailed: ${errorCount}`); console.log(`Bulk download done. S:${successCount}, F:${errorCount}`);
-        } catch (error) { alert("Unexpected bulk download error."); console.error("Bulk download error:", error); }
-        finally { bulkDownloadBtn.textContent = originalText; bulkDownloadBtn.disabled = false; bulkDownloadBtn.setAttribute('aria-disabled', 'false'); }
+            // Add a small delay between downloads to prevent browser freezing/blocking
+            // Adjust delay as needed (e.g., 300ms)
+            await new Promise(resolve => setTimeout(resolve, 250));
+        }
+
+        // --- Final Report ---
+        console.log(`Bulk download finished. Success: ${successCount}, Failed: ${errorCount}`);
+         let finalMessage = `Bulk download finished for "${novel.title}".\n\nSuccessfully downloaded: ${successCount} chapter(s)`;
+         if (errorCount > 0) {
+             finalMessage += `\nFailed to download: ${errorCount} chapter(s)`;
+         }
+         alert(finalMessage);
+
+        // --- Reset Button State ---
+        bulkDownloadBtn.textContent = originalText;
+        bulkDownloadBtn.disabled = false;
+        bulkDownloadBtn.setAttribute('aria-disabled', 'false');
+        bulkDownloadBtn.removeAttribute('aria-live');
     }
+
 
     // --- Event Listeners Setup ---
     function setupEventListeners() {
-        document.querySelectorAll('.back-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.target || 'home-page')));
+        // Navigation Buttons
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('click', () => showPage(btn.dataset.target || 'home-page'));
+        });
         document.getElementById('settings-btn').addEventListener('click', () => showPage('settings-page'));
-        themeToggleBtn.addEventListener('click', () => { const current = document.body.classList.contains('dark-mode') ? 'dark' : 'light'; applyTheme(current === 'dark' ? 'light' : 'dark'); });
+
+        // Theme Toggle
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); // Toggle and save
+        });
+
+        // Home Page Actions
         document.getElementById('add-novel-btn').addEventListener('click', () => openNovelModal());
         importButton.addEventListener('click', triggerImport);
-        importFileInput.addEventListener('change', (event) => { if (event.target.files?.length) importData(event.target.files[0]); });
+        importFileInput.addEventListener('change', (event) => {
+            if (event.target.files?.length) {
+                importData(event.target.files[0]);
+            }
+             // Reset file input value allows importing the same file again if needed after failure/cancel
+            event.target.value = null;
+        });
         exportButton.addEventListener('click', exportAllData);
+
+        // Settings Page Actions
         deleteAllDataBtn.addEventListener('click', deleteAllData);
-        document.getElementById('edit-novel-btn').addEventListener('click', () => { if (currentNovelId) openNovelModal(currentNovelId); });
+
+        // Novel Info Page Actions
+        document.getElementById('edit-novel-btn').addEventListener('click', () => {
+            if (currentNovelId) openNovelModal(currentNovelId);
+        });
         document.getElementById('delete-novel-btn').addEventListener('click', async () => {
-             if (!currentNovelId) return; const novel = findNovel(currentNovelId);
-             if (novel && confirm(`Delete "${novel.title || 'Untitled'}" and chapters?`)) {
-                 await deleteNovelData(currentNovelId); currentNovelId = null; renderNovelList(); showPage('home-page'); alert(`Novel "${novel.title || 'Untitled'}" deleted.`); } });
-        document.getElementById('add-chapter-btn').addEventListener('click', () => { if (currentNovelId) openChapterModal(currentNovelId); });
-        bulkDownloadBtn.addEventListener('click', () => { if (currentNovelId) downloadAllChapters(currentNovelId); });
+            if (!currentNovelId) return;
+            const novel = findNovel(currentNovelId);
+            if (novel && confirm(`⚠️ Delete Novel ⚠️\n\nAre you sure you want to permanently delete the novel "${novel.title || 'Untitled'}" and all its chapters?\n\nThis action cannot be undone.`)) {
+                 const titleToDelete = novel.title || 'Untitled'; // Store before potentially deleting novel object
+                 try {
+                    await deleteNovelData(currentNovelId);
+                    currentNovelId = null; // Clear current context
+                    renderNovelList(); // Update home list
+                    showPage('home-page'); // Go back home
+                    alert(`Novel "${titleToDelete}" has been deleted.`);
+                } catch (error) {
+                     console.error("Error during novel deletion flow:", error);
+                     alert(`An error occurred while trying to delete "${titleToDelete}".`);
+                }
+            }
+        });
+        document.getElementById('add-chapter-btn').addEventListener('click', () => {
+            if (currentNovelId) openChapterModal(currentNovelId);
+        });
+        bulkDownloadBtn.addEventListener('click', () => {
+             if (currentNovelId) downloadAllChapters(currentNovelId);
+        });
+
+        // Novel Modal Actions & Closing
         document.getElementById('save-novel-modal-btn').addEventListener('click', saveNovelFromModal);
         document.getElementById('cancel-novel-modal-btn').addEventListener('click', closeNovelModal);
-        novelModal.addEventListener('click', (event) => { if (event.target === novelModal) closeNovelModal(); });
-        novelModalTitleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveNovelFromModal(); } });
+        novelModal.addEventListener('click', (event) => {
+            // Close if clicking on the modal backdrop (the semi-transparent overlay)
+            if (event.target === novelModal) closeNovelModal();
+        });
+        // Allow Enter key submission from inputs (optional, can be annoying)
+        // novelModalTitleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); saveNovelFromModal(); } });
+
+
+        // Chapter Modal Actions & Closing
         document.getElementById('save-chapter-modal-btn').addEventListener('click', saveChapterFromModal);
         document.getElementById('cancel-chapter-modal-btn').addEventListener('click', closeChapterModal);
-        chapterModal.addEventListener('click', (event) => { if (event.target === chapterModal) closeChapterModal(); });
-        chapterModalTitleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); chapterModalContentInput.focus(); } });
+        chapterModal.addEventListener('click', (event) => {
+            if (event.target === chapterModal) closeChapterModal();
+        });
+        // Allow Enter in title to move focus to content (improves flow)
+        chapterModalTitleInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent form submission/newline
+                chapterModalContentInput.focus();
+            }
+        });
+
+        // Reader Settings Modal Actions & Closing
         document.getElementById('reader-settings-btn').addEventListener('click', openReaderSettingsModal);
         document.getElementById('close-reader-settings-modal-btn').addEventListener('click', closeReaderSettingsModal);
-        readerSettingsModal.addEventListener('click', (event) => { if (event.target === readerSettingsModal) closeReaderSettingsModal(); });
+        readerSettingsModal.addEventListener('click', (event) => {
+            if (event.target === readerSettingsModal) closeReaderSettingsModal();
+        });
+        // Apply reader style changes immediately on select change
         fontSelect.addEventListener('change', (e) => applyReaderStyles(e.target.value, fontSizeSelect.value));
         fontSizeSelect.addEventListener('change', (e) => applyReaderStyles(fontSelect.value, e.target.value));
-        prevChapterBtn.addEventListener('click', () => { if (currentNovelId !== null && currentChapterIndex > 0) { currentChapterIndex--; loadReaderPage(currentNovelId, currentChapterIndex); } });
-        nextChapterBtn.addEventListener('click', () => { const novel = findNovel(currentNovelId); if (novel && currentChapterIndex < novel.chapters.length - 1) { currentChapterIndex++; loadReaderPage(currentNovelId, currentChapterIndex); } });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (readerSettingsModal.style.display === 'block') closeReaderSettingsModal(); else if (chapterModal.style.display === 'block') closeChapterModal(); else if (novelModal.style.display === 'block') closeNovelModal(); } });
+
+        // Reader Page Navigation
+        prevChapterBtn.addEventListener('click', () => {
+            if (currentNovelId !== null && currentChapterIndex > 0) {
+                currentChapterIndex--;
+                loadReaderPage(currentNovelId, currentChapterIndex);
+            }
+        });
+        nextChapterBtn.addEventListener('click', () => {
+            const novel = findNovel(currentNovelId);
+            if (novel && currentChapterIndex < novel.chapters.length - 1) {
+                currentChapterIndex++;
+                loadReaderPage(currentNovelId, currentChapterIndex);
+            }
+        });
+
+        // Global Key Listener (e.g., for Escape key to close modals)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Close modals in reverse order of likelihood/stacking
+                if (readerSettingsModal.style.display === 'block') {
+                    closeReaderSettingsModal();
+                } else if (chapterModal.style.display === 'block') {
+                    closeChapterModal();
+                } else if (novelModal.style.display === 'block') {
+                    closeNovelModal();
+                }
+            }
+             // Add keyboard navigation for reader page? (Left/Right arrows)
+             // Example: Check if reader page is active first
+             // if (document.getElementById('reader-page').classList.contains('active')) {
+             //     if (e.key === 'ArrowLeft' && !prevChapterBtn.disabled) {
+             //         prevChapterBtn.click();
+             //     } else if (e.key === 'ArrowRight' && !nextChapterBtn.disabled) {
+             //         nextChapterBtn.click();
+             //     }
+             // }
+        });
     }
 
     // --- Start App ---
