@@ -5,8 +5,8 @@
     /* Reader defaults */
     --font-family-reader: 'Arial', sans-serif;
     --font-size-reader: 16px;
-    --line-height-reader: 1.7; /* Default line height */
-    --paragraph-spacing-reader: 1em; /* Default space between paragraphs */
+    --line-height-reader: 1.6; /* Updated default line height */
+    /* --paragraph-spacing-reader: 1em; REMOVED */
 
     --spacing-xs: 4px; --spacing-sm: 8px; --spacing-md: 16px; --spacing-lg: 24px; --spacing-xl: 32px;
     --border-radius-sm: 4px; --border-radius-md: 8px; --border-radius-lg: 12px;
@@ -228,9 +228,9 @@ button.secondary:focus-visible { outline-color: var(--border-color); }
 .danger-zone p { margin-bottom: var(--spacing-md); color: var(--text-muted); font-size: 0.95em; }
 .danger-zone button { width: 100%; }
 
-/* === Text Content (Reader) === */
+/* === Text Content (Reader & Description) === */
 .text-content {
-    white-space: pre-wrap; /* Preserves line breaks */
+    white-space: pre-wrap; /* Preserves line breaks and spaces */
     overflow-wrap: break-word;
     word-wrap: break-word; /* Legacy */
     word-break: break-word;
@@ -238,18 +238,14 @@ button.secondary:focus-visible { outline-color: var(--border-color); }
     margin: 0 auto; /* Center content */
     color: var(--text-color);
 }
-/* Apply paragraph spacing */
-.text-content p:not(:first-child) {
-    margin-top: var(--paragraph-spacing-reader);
-}
+/* Paragraph spacing rule removed */
+
 #novel-info-description.text-content {
     max-width: none; /* Allow description to fill container */
     margin: 0;
-    white-space: normal; /* Override pre-wrap for description */
+    /* white-space: normal; REMOVED - Inherits pre-wrap now */
 }
-#novel-info-description.text-content p:not(:first-child) {
-    margin-top: 0.5em; /* Smaller spacing for description */
-}
+/* Paragraph spacing rule for description removed */
 
 
 /* === Modals === */

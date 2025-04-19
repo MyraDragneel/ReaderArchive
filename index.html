@@ -16,7 +16,7 @@
 <body>
     <div id="app-container">
 
-        <!-- Home Page (No changes here) -->
+        <!-- Home Page -->
         <div id="home-page" class="page active">
             <header class="page-header home-header">
                 <h1>My Novels</h1>
@@ -37,7 +37,7 @@
             </main>
         </div>
 
-        <!-- Settings Page (No changes here) -->
+        <!-- Settings Page -->
         <div id="settings-page" class="page">
             <header class="page-header">
                 <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
@@ -52,7 +52,7 @@
             </main>
         </div>
 
-        <!-- Novel Info Page (No changes here) -->
+        <!-- Novel Info Page -->
         <div id="novel-info-page" class="page">
             <header class="page-header">
                  <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
@@ -71,6 +71,7 @@
                     </div>
                     <div class="description-section">
                         <strong>Description:</strong>
+                        <!-- This div now relies on white-space: pre-wrap from .text-content -->
                         <div id="novel-info-description" class="info-box text-content"></div>
                     </div>
                 </section>
@@ -93,7 +94,7 @@
             </main>
         </div>
 
-        <!-- Reader Page (No changes here) -->
+        <!-- Reader Page -->
         <div id="reader-page" class="page">
             <header class="page-header reader-header">
                  <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back to Novel Info">⬅️</button>
@@ -103,6 +104,7 @@
                  </div>
             </header>
             <main id="reader-main-content" class="page-content reader-main">
+                 <!-- This div relies on white-space: pre-wrap from .text-content -->
                  <div id="reader-content" class="text-content" aria-live="polite">
                      <p>Loading...</p>
                  </div>
@@ -114,7 +116,7 @@
             </footer>
         </div>
 
-        <!-- Novel Modal (No changes here) -->
+        <!-- Novel Modal -->
         <div id="novel-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="novel-modal-title-heading">
              <div class="modal-content">
                 <h2 id="novel-modal-title-heading">Add New Novel</h2>
@@ -127,7 +129,7 @@
             </div>
         </div>
 
-        <!-- Chapter Modal (No changes here) -->
+        <!-- Chapter Modal -->
         <div id="chapter-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="chapter-modal-title-heading">
               <div class="modal-content">
                 <h2 id="chapter-modal-title-heading">Add New Chapter</h2>
@@ -138,14 +140,13 @@
              </div>
         </div>
 
-        <!-- Reader Settings Modal (Font select updated) -->
+        <!-- Reader Settings Modal -->
         <div id="reader-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reader-settings-title-heading">
             <div class="modal-content reader-settings-modal-content">
                 <h2 id="reader-settings-title-heading">Reader Display</h2>
 
                 <div class="form-group">
                     <label for="font-select">Font Family</label>
-                    <!-- Updated Font Selection Dropdown -->
                     <select id="font-select" aria-label="Select Font Family">
                         <option value="Arial, sans-serif">Arial (System)</option>
                         <option value="'Times New Roman', Times, serif">Times New Roman (System)</option>
@@ -181,14 +182,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="line-height-slider">Line Spacing (<span id="line-height-value">1.7</span>)</label>
-                    <input type="range" id="line-height-slider" min="1.2" max="2.2" step="0.1" value="1.7" aria-labelledby="line-height-value">
+                    <!-- Updated Line Spacing Range and Default -->
+                    <label for="line-height-slider">Line Spacing (<span id="line-height-value">1.6</span>)</label>
+                    <input type="range" id="line-height-slider" min="1.0" max="8.0" step="0.1" value="1.6" aria-labelledby="line-height-value">
                 </div>
 
-                <div class="form-group">
-                     <label for="paragraph-spacing-slider">Paragraph Spacing (<span id="paragraph-spacing-value">1</span>em)</label>
-                     <input type="range" id="paragraph-spacing-slider" min="0.5" max="2.0" step="0.1" value="1.0" aria-labelledby="paragraph-spacing-value">
-                </div>
+                <!-- Paragraph Spacing Slider Removed -->
 
                 <div class="modal-actions button-group">
                     <button id="close-reader-settings-modal-btn" class="secondary">Close</button>

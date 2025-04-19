@@ -1,13 +1,13 @@
 // UPDATE THIS VERSION WHEN YOU CHANGE ANY CACHED FILES
-const CACHE_NAME = 'local-novel-reader-cache-v8'; // Incremented version
+const CACHE_NAME = 'local-novel-reader-cache-v9'; // Incremented version
 const urlsToCache = [
   './',
   'index.html',
   'style.css',
   'script.js',
   'manifest.json',
-  // Updated Google Fonts URL to cache
-  'https://fonts.googleapis.com/css2?family=Arial&family=Source+Code+Pro&family=Times+New+Roman&family=Merriweather&family=Noto+Serif&display=swap'
+  // Updated Google Fonts URL to cache (matches index.html)
+  'https://fonts.googleapis.com/css2?family=Arial&family=Bitter&family=EB+Garamond&family=Inter&family=Lato&family=Libre+Baskerville&family=Lora&family=Merriweather&family=Noto+Serif&family=Nunito+Sans&family=Open+Sans&family=PT+Serif&family=Roboto&family=Source+Code+Pro&family=Times+New+Roman&display=swap'
 ];
 
 self.addEventListener('install', event => {
@@ -16,13 +16,14 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         // console.log('SW: Caching core assets');
+        // Use addAll for atomic caching of essential assets
         return cache.addAll(urlsToCache);
       })
       .catch(error => {
          console.error('SW Cache Install failed:', error);
       })
       .then(() => {
-          // Force the waiting service worker to become the active service worker.
+          // Force the waiting service worker to become the active service worker immediately.
           return self.skipWaiting();
       })
   );
@@ -36,23 +37,24 @@ self.addEventListener('activate', event => {
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
             // console.log('SW: Deleting old cache:', cacheName);
-            return caches.delete(cacheName); // Delete old caches
+            return caches.delete(cacheName); // Delete caches not in the whitelist
           }
         })
       );
     }).then(() => {
-        // Tell the active service worker to take control of the page immediately.
+        // Take control of uncontrolled clients (e.g., pages loaded before activation)
         return self.clients.claim();
     })
   );
 });
 
 self.addEventListener('fetch', event => {
-  // We only want to handle GET requests
+  // We only intercept GET requests. Other methods like POST should pass through.
   if (event.request.method !== 'GET') {
     return;
   }
 
+  // Strategy: Cache First, then Network for core assets and Google Fonts
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
@@ -64,33 +66,34 @@ self.addEventListener('fetch', event => {
         // Not in cache - fetch from network
         return fetch(event.request).then(
           networkResponse => {
-            // Check if we received a valid response
+            // Check if we received a valid response (200 OK)
+            // Also check type: 'basic' for same-origin, 'cors' for cross-origin (like Google Fonts)
             if (!networkResponse || networkResponse.status !== 200 || (networkResponse.type !== 'basic' && networkResponse.type !== 'cors')) {
-              return networkResponse; // Don't cache invalid responses
+              return networkResponse; // Don't cache invalid or non-cacheable responses
             }
 
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
+            // Clone the response. A response is a stream and can only be consumed once.
+            // We need one stream for the browser and one for the cache.
             const responseToCache = networkResponse.clone();
             const requestUrl = event.request.url;
-            const scope = self.registration.scope;
+            const scope = self.registration.scope; // The scope under which the SW is registered
 
             // Determine relative URL for checking against urlsToCache
             let relativeUrl = null;
              if (requestUrl.startsWith(scope)) {
                  relativeUrl = requestUrl.substring(scope.length);
-                 if (relativeUrl === '') relativeUrl = './'; // Normalize root path
+                 if (relativeUrl === '') relativeUrl = './'; // Normalize root path ('/' or '/index.html')
              }
 
-            // Cache core app files and requested Google Fonts assets (CSS and font files)
+            // Check if the request is for a core file or a Google Fonts asset
             const isCoreFile = relativeUrl && urlsToCache.includes(relativeUrl);
             const isGoogleFontAsset = requestUrl.startsWith('https://fonts.gstatic.com') || requestUrl.startsWith('https://fonts.googleapis.com');
 
+            // Cache the fetched resource if it's a core file or Google Font asset
             if (isCoreFile || isGoogleFontAsset) {
                  caches.open(CACHE_NAME)
                     .then(cache => {
+                        // Put the cloned response into the cache
                         cache.put(event.request, responseToCache);
                     })
                     .catch(cacheError => {
@@ -98,14 +101,16 @@ self.addEventListener('fetch', event => {
                     });
             }
 
+            // Return the original network response to the browser
             return networkResponse;
           }
         ).catch(error => {
-            // Network request failed, try to serve a fallback?
-            // For this app, failing silently might be okay, or return a basic offline indicator.
+            // Network request failed, likely offline
             console.warn('SW Fetch failed; user is likely offline:', event.request.url, error);
-            // Optional: return a custom offline response page
+            // Optional: Return a fallback offline page/resource
+            // For this app, failing might be acceptable as core assets should be cached.
             // return caches.match('/offline.html');
+            // Or just let the browser handle the network error
         });
       })
   );
