@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Modified viewport meta tag -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Local Novel Reader</title>
     <link rel="stylesheet" href="style.css">
@@ -11,12 +10,13 @@
     <meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Arial&family=Source+Code+Pro&family=Times+New+Roman&display=swap" rel="stylesheet">
+    <!-- Updated Google Fonts Link for 15 fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Arial&family=Bitter&family=EB+Garamond&family=Inter&family=Lato&family=Libre+Baskerville&family=Lora&family=Merriweather&family=Noto+Serif&family=Nunito+Sans&family=Open+Sans&family=PT+Serif&family=Roboto&family=Source+Code+Pro&family=Times+New+Roman&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app-container">
 
-        <!-- Home Page -->
+        <!-- Home Page (No changes here) -->
         <div id="home-page" class="page active">
             <header class="page-header home-header">
                 <h1>My Novels</h1>
@@ -37,7 +37,7 @@
             </main>
         </div>
 
-        <!-- Settings Page -->
+        <!-- Settings Page (No changes here) -->
         <div id="settings-page" class="page">
             <header class="page-header">
                 <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
@@ -52,7 +52,7 @@
             </main>
         </div>
 
-        <!-- Novel Info Page -->
+        <!-- Novel Info Page (No changes here) -->
         <div id="novel-info-page" class="page">
             <header class="page-header">
                  <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
@@ -93,7 +93,7 @@
             </main>
         </div>
 
-        <!-- Reader Page -->
+        <!-- Reader Page (No changes here) -->
         <div id="reader-page" class="page">
             <header class="page-header reader-header">
                  <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back to Novel Info">⬅️</button>
@@ -114,7 +114,7 @@
             </footer>
         </div>
 
-        <!-- Novel Modal -->
+        <!-- Novel Modal (No changes here) -->
         <div id="novel-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="novel-modal-title-heading">
              <div class="modal-content">
                 <h2 id="novel-modal-title-heading">Add New Novel</h2>
@@ -127,7 +127,7 @@
             </div>
         </div>
 
-        <!-- Chapter Modal -->
+        <!-- Chapter Modal (No changes here) -->
         <div id="chapter-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="chapter-modal-title-heading">
               <div class="modal-content">
                 <h2 id="chapter-modal-title-heading">Add New Chapter</h2>
@@ -138,18 +138,33 @@
              </div>
         </div>
 
-        <!-- Reader Settings Modal -->
+        <!-- Reader Settings Modal (Font select updated) -->
         <div id="reader-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reader-settings-title-heading">
             <div class="modal-content reader-settings-modal-content">
                 <h2 id="reader-settings-title-heading">Reader Display</h2>
+
                 <div class="form-group">
                     <label for="font-select">Font Family</label>
+                    <!-- Updated Font Selection Dropdown -->
                     <select id="font-select" aria-label="Select Font Family">
-                        <option value="Arial, sans-serif">Arial</option>
-                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                        <option value="Arial, sans-serif">Arial (System)</option>
+                        <option value="'Times New Roman', Times, serif">Times New Roman (System)</option>
                         <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                        <option value="'Merriweather', serif">Merriweather</option>
+                        <option value="'Noto Serif', serif">Noto Serif</option>
+                        <option value="'EB Garamond', serif">EB Garamond</option>
+                        <option value="'Libre Baskerville', serif">Libre Baskerville</option>
+                        <option value="'Bitter', serif">Bitter</option>
+                        <option value="'PT Serif', serif">PT Serif</option>
+                        <option value="'Lora', serif">Lora</option>
+                        <option value="'Open Sans', sans-serif">Open Sans</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="'Lato', sans-serif">Lato</option>
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Nunito Sans', sans-serif">Nunito Sans</option>
                      </select>
                 </div>
+
                  <div class="form-group">
                      <label for="font-size-select">Font Size</label>
                      <select id="font-size-select" aria-label="Select Font Size">
@@ -164,6 +179,17 @@
                         <option value="28px">28</option>
                     </select>
                 </div>
+
+                <div class="form-group">
+                    <label for="line-height-slider">Line Spacing (<span id="line-height-value">1.7</span>)</label>
+                    <input type="range" id="line-height-slider" min="1.2" max="2.2" step="0.1" value="1.7" aria-labelledby="line-height-value">
+                </div>
+
+                <div class="form-group">
+                     <label for="paragraph-spacing-slider">Paragraph Spacing (<span id="paragraph-spacing-value">1</span>em)</label>
+                     <input type="range" id="paragraph-spacing-slider" min="0.5" max="2.0" step="0.1" value="1.0" aria-labelledby="paragraph-spacing-value">
+                </div>
+
                 <div class="modal-actions button-group">
                     <button id="close-reader-settings-modal-btn" class="secondary">Close</button>
                 </div>
@@ -173,6 +199,5 @@
     </div> <!-- End #app-container -->
 
     <script src="script.js" defer></script>
-    <style>.visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}</style>
 </body>
 </html>
