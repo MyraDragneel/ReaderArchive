@@ -29,6 +29,9 @@
                     <button id="settings-btn" class="icon-btn" aria-label="Open Settings">⚙️</button>
                 </div>
             </header>
+            <div class="search-container">
+                <input type="search" id="novel-search" placeholder="Search novels by title or author..." aria-label="Search Novels">
+            </div>
             <main class="page-content">
                 <ul id="novel-list" class="item-list" aria-live="polite">
                     <li class="placeholder">Loading novels...</li>
@@ -82,8 +85,11 @@
                          <h2 id="chapters-heading">Chapters</h2>
                          <div class="button-group">
                              <button id="add-chapter-btn">➕ Add Chapter</button>
-                             <button id="bulk-download-chapters-btn" disabled>💾 Download All</button>
+                             <button id="bulk-download-chapters-btn" disabled>💾 Download All (.txt)</button>
                          </div>
+                     </div>
+                     <div class="search-container chapter-search-container">
+                         <input type="search" id="chapter-search" placeholder="Search chapters by title..." aria-label="Search Chapters">
                      </div>
                      <ul id="chapter-list" class="item-list" aria-live="polite">
                          <li class="placeholder">No chapters added yet.</li>
@@ -98,10 +104,12 @@
                  <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back to Novel Info">⬅️</button>
                  <h2 id="reader-chapter-title">Chapter Title</h2>
                  <div class="header-actions">
+                    <button id="reader-fullscreen-btn" class="icon-btn" aria-label="Enter Full Screen">⛶</button>
                     <button id="reader-settings-btn" class="icon-btn" aria-label="Reader Display Settings">Aa</button>
                  </div>
             </header>
-            <main id="reader-main-content" class="page-content reader-main">
+            <!-- tabindex=-1 allows focusing for potential keyboard scroll -->
+            <main id="reader-main-content" class="page-content reader-main" tabindex="-1">
                  <div id="reader-content" class="text-content" aria-live="polite">
                      <p>Loading...</p>
                  </div>
@@ -145,8 +153,8 @@
                 <div class="form-group">
                     <label for="font-select">Font Family</label>
                     <select id="font-select" aria-label="Select Font Family">
-                        <option value="Arial, sans-serif">Arial (System)</option>
-                        <option value="'Times New Roman', Times, serif">Times New Roman (System)</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
                         <option value="'Source Code Pro', monospace">Source Code Pro</option>
                      </select>
                 </div>
