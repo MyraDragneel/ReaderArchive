@@ -38,7 +38,8 @@ body { font-family: var(--font-family-base); background-color: var(--bg-color); 
 .page-content { padding: var(--spacing-md); overflow-y: auto; -webkit-overflow-scrolling: touch; flex-grow: 1; }
 #home-page .page-content { padding-top: var(--spacing-sm); }
 #novel-info-page .page-content { padding-top: var(--spacing-sm); }
-.page-content section { margin-bottom: var(--spacing-lg); }
+#settings-page .page-content section { margin-bottom: var(--spacing-lg); }
+#settings-page .page-content section h2 { margin-bottom: var(--spacing-md); font-size: 1.2em; font-weight: 600; }
 .page-content hr { border: none; border-top: 1px solid var(--border-color); margin: var(--spacing-lg) 0; transition: border-color var(--transition-medium); }
 .page-footer { background-color: var(--footer-bg); padding: var(--spacing-sm) var(--spacing-md); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; gap: var(--spacing-sm); min-height: 56px; box-shadow: 0 -2px 5px var(--shadow-color); transition: background-color var(--transition-medium), border-color var(--transition-medium); flex-shrink: 0; }
 #reader-page { display: flex; flex-direction: column; height: 100%; }

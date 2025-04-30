@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Local Novel Reader</title>
+    <title data-i18n-key="app_title">Local Novel Reader</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f8f9fa" media="(prefers-color-scheme: light)">
@@ -18,23 +17,23 @@
         <!-- Home Page -->
         <div id="home-page" class="page active">
             <header class="page-header home-header">
-                <h1>My Novels</h1>
+                <h1 data-i18n-key="home_header">My Novels</h1>
                 <div class="header-actions home-actions">
-                    <button id="add-novel-btn" class="icon-btn" aria-label="Add New Novel">➕</button>
-                    <button id="import-btn" class="icon-btn" aria-label="Import Novels Archive">📥</button>
+                    <button id="add-novel-btn" class="icon-btn" aria-label="Add New Novel" data-i18n-aria-label="aria_add_novel">➕</button>
+                    <button id="import-btn" class="icon-btn" aria-label="Import Novels Archive" data-i18n-aria-label="aria_import_archive">📥</button>
                     <input type="file" id="import-file-input" accept=".novelarchive.gz" style="display: none;" aria-hidden="true">
-                    <button id="export-btn" class="icon-btn" aria-label="Export All Novels">📤</button>
+                    <button id="export-btn" class="icon-btn" aria-label="Export All Novels" data-i18n-aria-label="aria_export_all">📤</button>
                     <div class="action-separator"></div>
-                    <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Light/Dark Theme">🌓</button>
-                    <button id="settings-btn" class="icon-btn" aria-label="Open Settings">⚙️</button>
+                    <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle Light/Dark Theme" data-i18n-aria-label="aria_toggle_theme">🌓</button>
+                    <button id="settings-btn" class="icon-btn" aria-label="Open Settings" data-i18n-aria-label="aria_open_settings">⚙️</button>
                 </div>
             </header>
             <div class="search-container">
-                <input type="search" id="novel-search" placeholder="Search novels by title or author..." aria-label="Search Novels">
+                <input type="search" id="novel-search" placeholder="Search novels by title or author..." aria-label="Search Novels" data-i18n-placeholder="placeholder_search_novels" data-i18n-aria-label="aria_search_novels">
             </div>
             <main class="page-content">
                 <ul id="novel-list" class="item-list" aria-live="polite">
-                    <li class="placeholder">Loading novels...</li>
+                    <li class="placeholder" data-i18n-key="placeholder_loading_novels">Loading novels...</li>
                 </ul>
             </main>
         </div>
@@ -42,14 +41,24 @@
         <!-- Settings Page -->
         <div id="settings-page" class="page">
             <header class="page-header">
-                <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
-                <h1>Settings</h1>
+                <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home" data-i18n-aria-label="aria_back_home">⬅️</button>
+                <h1 data-i18n-key="settings_header">Settings</h1>
             </header>
             <main class="page-content">
+                <section class="language-settings" aria-labelledby="language-settings-heading">
+                    <h2 id="language-settings-heading" data-i18n-key="settings_language_header">Language</h2>
+                    <div class="form-group">
+                        <label for="language-select" class="visually-hidden" data-i18n-key="settings_language_label">Select Language</label>
+                        <select id="language-select" aria-label="Select Language" data-i18n-aria-label="aria_select_language">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                </section>
+                <hr>
                 <section class="danger-zone" aria-labelledby="danger-zone-heading">
-                    <h2 id="danger-zone-heading">Danger Zone</h2>
-                    <p>This permanently removes all novels, chapters, and settings stored by this app in your browser.</p>
-                    <button id="delete-all-data-btn" class="danger">🗑️ Delete All App Data</button>
+                    <h2 id="danger-zone-heading" data-i18n-key="danger_zone_header">Danger Zone</h2>
+                    <p data-i18n-key="danger_zone_desc">This permanently removes all novels, chapters, and settings stored by this app in your browser.</p>
+                    <button id="delete-all-data-btn" class="danger"><span data-i18n-key="btn_delete_all_data">🗑️ Delete All App Data</span></button>
                 </section>
             </main>
         </div>
@@ -57,42 +66,42 @@
         <!-- Novel Info Page -->
         <div id="novel-info-page" class="page">
             <header class="page-header">
-                 <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home">⬅️</button>
+                 <button class="back-btn icon-btn" data-target="home-page" aria-label="Back to Home" data-i18n-aria-label="aria_back_home">⬅️</button>
                  <h1 id="novel-info-title">Novel Title</h1>
                  <div class="header-actions">
-                     <button id="edit-novel-btn" class="icon-btn" aria-label="Edit Novel Metadata">✏️</button>
-                     <button id="delete-novel-btn" class="icon-btn danger" aria-label="Delete This Novel">🗑️</button>
+                     <button id="edit-novel-btn" class="icon-btn" aria-label="Edit Novel Metadata" data-i18n-aria-label="aria_edit_novel_meta">✏️</button>
+                     <button id="delete-novel-btn" class="icon-btn danger" aria-label="Delete This Novel" data-i18n-aria-label="aria_delete_this_novel">🗑️</button>
                  </div>
             </header>
             <main class="page-content">
                 <section id="novel-metadata" class="metadata-section" aria-labelledby="novel-metadata-heading">
-                    <h2 id="novel-metadata-heading" class="visually-hidden">Novel Details</h2>
+                    <h2 id="novel-metadata-heading" class="visually-hidden" data-i18n-key="details_novel_details">Novel Details</h2>
                     <div class="metadata-grid">
-                        <p><strong>Author:</strong> <span id="novel-info-author"></span></p>
-                        <p><strong>Genre:</strong> <span id="novel-info-genre"></span></p>
+                        <p><strong data-i18n-key="details_author">Author:</strong> <span id="novel-info-author"></span></p>
+                        <p><strong data-i18n-key="details_genre">Genre:</strong> <span id="novel-info-genre"></span></p>
                     </div>
                     <div class="description-section">
-                        <strong>Description:</strong>
+                        <strong data-i18n-key="details_description">Description:</strong>
                         <div id="novel-info-description" class="info-box text-content"></div>
                     </div>
                 </section>
                 <div class="last-read-section">
-                    <strong>Last Read:</strong> <span id="novel-info-last-read" tabindex="-1">Never</span>
+                    <strong data-i18n-key="details_last_read">Last Read:</strong> <span id="novel-info-last-read" tabindex="-1" data-i18n-key="details_never_read">Never</span>
                 </div>
                 <hr>
                 <section aria-labelledby="chapters-heading">
                      <div class="section-header">
-                         <h2 id="chapters-heading">Chapters</h2>
+                         <h2 id="chapters-heading" data-i18n-key="details_chapters">Chapters</h2>
                          <div class="button-group">
-                             <button id="add-chapter-btn">➕ Add Chapter</button>
-                             <button id="bulk-download-chapters-btn" disabled>💾 Download All (.txt)</button>
+                             <button id="add-chapter-btn"><span data-i18n-key="btn_add_chapter">➕ Add Chapter</span></button>
+                             <button id="bulk-download-chapters-btn" disabled><span data-i18n-key="btn_download_all_chapters">💾 Download All (.txt)</span></button>
                          </div>
                      </div>
                      <div class="search-container chapter-search-container">
-                         <input type="search" id="chapter-search" placeholder="Search chapters by title..." aria-label="Search Chapters">
+                         <input type="search" id="chapter-search" placeholder="Search chapters by title..." aria-label="Search Chapters" data-i18n-placeholder="placeholder_search_chapters" data-i18n-aria-label="aria_search_chapters">
                      </div>
                      <ul id="chapter-list" class="item-list" aria-live="polite">
-                         <li class="placeholder">No chapters added yet.</li>
+                         <li class="placeholder" data-i18n-key="placeholder_no_chapters">No chapters added yet.</li>
                      </ul>
                 </section>
             </main>
@@ -101,67 +110,70 @@
         <!-- Reader Page -->
         <div id="reader-page" class="page">
             <header class="page-header reader-header">
-                 <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back to Novel Info">⬅️</button>
+                 <button class="back-btn icon-btn reader-back-btn" data-target="novel-info-page" aria-label="Back to Novel Info" data-i18n-aria-label="aria_back_novel_info">⬅️</button>
                  <h2 id="reader-chapter-title">Chapter Title</h2>
                  <div class="header-actions">
-                    <button id="reader-fullscreen-btn" class="icon-btn" aria-label="Enter Full Screen">⛶</button>
-                    <button id="reader-settings-btn" class="icon-btn" aria-label="Reader Display Settings">Aa</button>
+                    <button id="reader-fullscreen-btn" class="icon-btn" aria-label="Enter Full Screen" data-i18n-aria-label="aria_enter_fullscreen">⛶</button>
+                    <button id="reader-settings-btn" class="icon-btn" aria-label="Reader Display Settings" data-i18n-aria-label="aria_reader_settings">Aa</button>
                  </div>
             </header>
-            <!-- tabindex=-1 allows focusing for potential keyboard scroll -->
             <main id="reader-main-content" class="page-content reader-main" tabindex="-1">
                  <div id="reader-content" class="text-content" aria-live="polite">
-                     <p>Loading...</p>
+                     <p data-i18n-key="text_loading">Loading...</p>
                  </div>
             </main>
             <footer class="page-footer reader-footer button-group">
-                 <button id="prev-chapter-btn" class="navigation-btn" disabled>⬅️ Previous</button>
-                 <button class="back-btn reader-back-btn icon-btn" data-target="novel-info-page" aria-label="Back to Novel Info">📖</button>
-                 <button id="next-chapter-btn" class="navigation-btn" disabled>Next ➡️</button>
+                 <button id="prev-chapter-btn" class="navigation-btn" disabled><span data-i18n-key="btn_previous">⬅️ Previous</span></button>
+                 <button class="back-btn reader-back-btn icon-btn" data-target="novel-info-page" aria-label="Back to Novel Info" data-i18n-aria-label="aria_back_novel_info">📖</button>
+                 <button id="next-chapter-btn" class="navigation-btn" disabled><span data-i18n-key="btn_next">Next ➡️</span></button>
             </footer>
         </div>
 
         <!-- Novel Modal -->
         <div id="novel-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="novel-modal-title-heading">
              <div class="modal-content">
-                <h2 id="novel-modal-title-heading">Add New Novel</h2>
+                <h2 id="novel-modal-title-heading" data-i18n-key="modal_add_novel_title">Add New Novel</h2>
                 <input type="hidden" id="novel-modal-id">
-                <div class="form-group"><label for="novel-modal-title-input">Title</label><input type="text" id="novel-modal-title-input" required></div>
-                <div class="form-group"><label for="novel-modal-author-input">Author</label><input type="text" id="novel-modal-author-input"></div>
-                <div class="form-group"><label for="novel-modal-genre-input">Genre</label><input type="text" id="novel-modal-genre-input"></div>
-                <div class="form-group"><label for="novel-modal-description-input">Description</label><textarea id="novel-modal-description-input" rows="5"></textarea></div>
-                <div class="modal-actions button-group"><button id="cancel-novel-modal-btn" class="secondary">Cancel</button><button id="save-novel-modal-btn">Save</button></div>
+                <div class="form-group"><label for="novel-modal-title-input" data-i18n-key="form_title">Title</label><input type="text" id="novel-modal-title-input" required></div>
+                <div class="form-group"><label for="novel-modal-author-input" data-i18n-key="form_author">Author</label><input type="text" id="novel-modal-author-input"></div>
+                <div class="form-group"><label for="novel-modal-genre-input" data-i18n-key="form_genre">Genre</label><input type="text" id="novel-modal-genre-input"></div>
+                <div class="form-group"><label for="novel-modal-description-input" data-i18n-key="form_description">Description</label><textarea id="novel-modal-description-input" rows="5"></textarea></div>
+                <div class="modal-actions button-group">
+                    <button id="cancel-novel-modal-btn" class="secondary"><span data-i18n-key="btn_cancel">Cancel</span></button>
+                    <button id="save-novel-modal-btn"><span data-i18n-key="btn_save">Save</span></button>
+                </div>
             </div>
         </div>
 
         <!-- Chapter Modal -->
         <div id="chapter-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="chapter-modal-title-heading">
               <div class="modal-content">
-                <h2 id="chapter-modal-title-heading">Add New Chapter</h2>
+                <h2 id="chapter-modal-title-heading" data-i18n-key="modal_add_chapter_title">Add New Chapter</h2>
                 <input type="hidden" id="chapter-modal-novel-id"><input type="hidden" id="chapter-modal-index">
-                 <div class="form-group"><label for="chapter-modal-title-input">Chapter Title</label><input type="text" id="chapter-modal-title-input" required></div>
-                 <div class="form-group"><label for="chapter-modal-content-input">Content</label><textarea id="chapter-modal-content-input" rows="10" required></textarea></div>
-                <div class="modal-actions button-group"><button id="cancel-chapter-modal-btn" class="secondary">Cancel</button><button id="save-chapter-modal-btn">Save Chapter</button></div>
+                 <div class="form-group"><label for="chapter-modal-title-input" data-i18n-key="form_chapter_title">Chapter Title</label><input type="text" id="chapter-modal-title-input" required></div>
+                 <div class="form-group"><label for="chapter-modal-content-input" data-i18n-key="form_content">Content</label><textarea id="chapter-modal-content-input" rows="10" required></textarea></div>
+                <div class="modal-actions button-group">
+                    <button id="cancel-chapter-modal-btn" class="secondary"><span data-i18n-key="btn_cancel">Cancel</span></button>
+                    <button id="save-chapter-modal-btn"><span data-i18n-key="btn_save_chapter">Save Chapter</span></button>
+                </div>
              </div>
         </div>
 
         <!-- Reader Settings Modal -->
         <div id="reader-settings-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reader-settings-title-heading">
             <div class="modal-content reader-settings-modal-content">
-                <h2 id="reader-settings-title-heading">Reader Display</h2>
-
+                <h2 id="reader-settings-title-heading" data-i18n-key="modal_reader_display_title">Reader Display</h2>
                 <div class="form-group">
-                    <label for="font-select">Font Family</label>
-                    <select id="font-select" aria-label="Select Font Family">
+                    <label for="font-select" data-i18n-key="form_font_family">Font Family</label>
+                    <select id="font-select" aria-label="Select Font Family" data-i18n-aria-label="aria_select_font_family">
                         <option value="Arial, sans-serif">Arial</option>
                         <option value="'Times New Roman', Times, serif">Times New Roman</option>
                         <option value="'Source Code Pro', monospace">Source Code Pro</option>
                      </select>
                 </div>
-
                  <div class="form-group">
-                     <label for="font-size-select">Font Size</label>
-                     <select id="font-size-select" aria-label="Select Font Size">
+                     <label for="font-size-select" data-i18n-key="form_font_size">Font Size</label>
+                     <select id="font-size-select" aria-label="Select Font Size" data-i18n-aria-label="aria_select_font_size">
                         <option value="12px">12</option>
                         <option value="14px">14</option>
                         <option value="16px">16</option>
@@ -173,20 +185,17 @@
                         <option value="28px">28</option>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label for="line-height-slider">Line Spacing (<span id="line-height-value">1.6</span>)</label>
+                    <label for="line-height-slider"><span data-i18n-key="form_line_spacing">Line Spacing</span> (<span id="line-height-value">1.6</span>)</label>
                     <input type="range" id="line-height-slider" min="1.0" max="8.0" step="0.1" value="1.6" aria-labelledby="line-height-value">
                 </div>
-
                 <div class="modal-actions button-group">
-                    <button id="close-reader-settings-modal-btn" class="secondary">Close</button>
+                    <button id="close-reader-settings-modal-btn" class="secondary"><span data-i18n-key="btn_close">Close</span></button>
                 </div>
             </div>
         </div>
 
-    </div> <!-- End #app-container -->
-
+    </div>
     <script src="script.js" defer></script>
 </body>
 </html>
