@@ -15,11 +15,11 @@
     --font-size-reader: 16px;
     --line-height-reader: 1.6;
 
-    --spacing-xs: 0.25rem;  /* 4px */
-    --spacing-sm: 0.5rem;   /* 8px */
-    --spacing-md: 1rem;     /* 16px */
-    --spacing-lg: 1.5rem;   /* 24px */
-    --spacing-xl: 2rem;     /* 32px */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
 
     --border-radius-sm: 0.25rem;
     --border-radius-md: 0.5rem;
@@ -118,6 +118,10 @@ body {
     flex-direction: column;
     background-color: var(--color-bg-primary);
     position: relative;
+}
+
+#import-file-input {
+    display: none;
 }
 
 /* Page Structure & Transitions */
@@ -383,7 +387,6 @@ body.dark-mode select.form-control {
     background-color: var(--color-bg-secondary);
     border-radius: var(--border-radius-md);
     border: 1px dashed var(--color-border);
-    /* font-style: italic; Removed */
 }
 
 .novel-card, .chapter-card {
@@ -510,7 +513,7 @@ body.dark-mode select.form-control {
 
 /* Settings Page */
 .settings-section { margin-bottom: var(--spacing-lg); }
-#language-settings-heading { margin-bottom: var(--spacing-sm); } /* Added for spacing */
+#language-settings-heading { margin-bottom: var(--spacing-sm); }
 
 .danger-zone {
     border: 1px solid var(--color-accent-danger);
