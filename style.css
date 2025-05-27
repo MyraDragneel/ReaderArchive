@@ -32,8 +32,8 @@
 
     --transition-fast: 0.15s ease-out;
     --transition-medium: 0.25s ease-out;
-    --transition-page: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    --transition-modal: 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    --transition-page: 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); /* Was 0.3s */
+    --transition-modal: 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); /* Was 0.25s */
 
     /* Light Theme */
     --bg-primary-light: #FFFFFF;
@@ -204,7 +204,7 @@ body {
     justify-content: flex-start;
 }
 .app-header__actions-spacer {
-    width: 44px;
+    width: 44px; /* Matches icon button width for alignment */
     flex-shrink: 0;
 }
 
@@ -289,7 +289,7 @@ body {
 .btn:active:not(:disabled) { transform: scale(0.97); box-shadow: none; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-.btn--primary { /* Already default */ }
+/* .btn--primary {} Default styles apply */
 .btn--secondary {
     background-color: var(--color-bg-tertiary);
     border-color: var(--color-border);
