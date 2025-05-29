@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app-container">
@@ -21,12 +21,12 @@
             <header class="app-header">
                 <h1 class="app-header__title" data-i18n-key="home_header"></h1>
                 <div class="app-header__actions">
-                    <button id="add-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_add_novel">➕</button>
-                    <button id="import-btn" class="btn btn--icon" data-i18n-aria-label="aria_import_archive">📥</button>
+                    <button type="button" id="add-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_add_novel">➕</button>
+                    <button type="button" id="import-btn" class="btn btn--icon" data-i18n-aria-label="aria_import_archive">📥</button>
                     <input type="file" id="import-file-input" accept=".novelarchive.gz" aria-hidden="true">
-                    <button id="export-btn" class="btn btn--icon" data-i18n-aria-label="aria_export_all">📤</button>
-                    <button id="theme-toggle-btn" class="btn btn--icon" data-i18n-aria-label="aria_toggle_theme">🌓</button>
-                    <button id="settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_open_settings">⚙️</button>
+                    <button type="button" id="export-btn" class="btn btn--icon" data-i18n-aria-label="aria_export_all">📤</button>
+                    <button type="button" id="theme-toggle-btn" class="btn btn--icon" data-i18n-aria-label="aria_toggle_theme">🌓</button>
+                    <button type="button" id="settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_open_settings">⚙️</button>
                 </div>
             </header>
             <div class="search-bar">
@@ -42,7 +42,7 @@
         <!-- Settings Page -->
         <div id="settings-page" class="page">
             <header class="app-header">
-                <button class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home">⬅️</button>
+                <button type="button" class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home">⬅️</button>
                 <h1 class="app-header__title" data-i18n-key="settings_header"></h1>
                 <div class="app-header__actions-spacer"></div>
             </header>
@@ -59,7 +59,7 @@
                 <section class="settings-section danger-zone" aria-labelledby="danger-zone-heading">
                     <h2 id="danger-zone-heading" class="section-title danger-zone__title" data-i18n-key="danger_zone_header"></h2>
                     <p class="danger-zone__description" data-i18n-key="danger_zone_desc"></p>
-                    <button id="delete-all-data-btn" class="btn btn--danger btn--full-width" data-i18n-key="btn_delete_all_data"></button>
+                    <button type="button" id="delete-all-data-btn" class="btn btn--danger btn--full-width" data-i18n-key="btn_delete_all_data"></button>
                 </section>
             </main>
         </div>
@@ -67,18 +67,20 @@
         <!-- Novel Info Page -->
         <div id="novel-info-page" class="page">
             <header class="app-header">
-                 <button class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home">⬅️</button>
+                 <button type="button" class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home">⬅️</button>
                  <h1 id="novel-info-title" class="app-header__title app-header__title--ellipsis"></h1>
                  <div class="app-header__actions">
-                     <button id="edit-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_edit_novel_meta">✏️</button>
-                     <button id="delete-novel-btn" class="btn btn--icon btn--icon-danger" data-i18n-aria-label="aria_delete_this_novel">🗑️</button>
+                     <button type="button" id="edit-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_edit_novel_meta">✏️</button>
+                     <button type="button" id="delete-novel-btn" class="btn btn--icon btn--icon-danger" data-i18n-aria-label="aria_delete_this_novel">🗑️</button>
                  </div>
             </header>
             <main class="app-main">
                 <section id="novel-metadata" class="novel-details-section" aria-labelledby="novel-metadata-heading">
                     <h2 id="novel-metadata-heading" class="visually-hidden" data-i18n-key="details_novel_details"></h2>
-                    <div class="novel-meta-grid">
+                    <div class="novel-meta-item">
                         <p><strong data-i18n-key="details_author"></strong> <span id="novel-info-author"></span></p>
+                    </div>
+                    <div class="novel-meta-item">
                         <p><strong data-i18n-key="details_genre"></strong> <span id="novel-info-genre"></span></p>
                     </div>
                     <div class="novel-description">
@@ -95,8 +97,8 @@
                      <div class="section-header">
                          <h2 id="chapters-heading" class="section-title" data-i18n-key="details_chapters"></h2>
                          <div class="button-group">
-                             <button id="add-chapter-btn" class="btn btn--primary" data-i18n-key="btn_add_chapter"></button>
-                             <button id="bulk-download-chapters-btn" class="btn btn--secondary" disabled data-i18n-key="btn_download_all_chapters"></button>
+                             <button type="button" id="add-chapter-btn" class="btn btn--primary" data-i18n-key="btn_add_chapter"></button>
+                             <button type="button" id="bulk-download-chapters-btn" class="btn btn--secondary" disabled data-i18n-key="btn_download_all_chapters"></button>
                          </div>
                      </div>
                      <div class="search-bar search-bar--nested">
@@ -112,11 +114,11 @@
         <!-- Reader Page -->
         <div id="reader-page" class="page">
             <header class="app-header app-header--reader">
-                 <button class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info">⬅️</button>
+                 <button type="button" class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info">⬅️</button>
                  <h2 id="reader-chapter-title" class="app-header__title app-header__title--ellipsis"></h2>
                  <div class="app-header__actions">
-                    <button id="reader-fullscreen-btn" class="btn btn--icon" data-i18n-aria-label="aria_enter_fullscreen">⛶</button>
-                    <button id="reader-settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_reader_settings">Aa</button>
+                    <button type="button" id="reader-fullscreen-btn" class="btn btn--icon" data-i18n-aria-label="aria_enter_fullscreen">⛶</button>
+                    <button type="button" id="reader-settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_reader_settings">Aa</button>
                  </div>
             </header>
             <main id="reader-main-content" class="app-main app-main--reader">
@@ -125,9 +127,9 @@
                  </div>
             </main>
             <footer class="app-footer app-footer--reader">
-                 <button id="prev-chapter-btn" class="btn btn--navigation" disabled data-i18n-key="btn_previous"></button>
-                 <button class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info">📖</button>
-                 <button id="next-chapter-btn" class="btn btn--navigation" disabled data-i18n-key="btn_next"></button>
+                 <button type="button" id="prev-chapter-btn" class="btn btn--navigation" disabled data-i18n-key="btn_previous"></button>
+                 <button type="button" class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info">📖</button>
+                 <button type="button" id="next-chapter-btn" class="btn btn--navigation" disabled data-i18n-key="btn_next"></button>
             </footer>
         </div>
 
@@ -153,8 +155,8 @@
                     <textarea id="novel-modal-description-input" class="form-control" rows="5"></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button id="cancel-novel-modal-btn" class="btn btn--secondary" data-i18n-key="btn_cancel"></button>
-                    <button id="save-novel-modal-btn" class="btn btn--primary" data-i18n-key="btn_save"></button>
+                    <button type="button" id="cancel-novel-modal-btn" class="btn btn--secondary" data-i18n-key="btn_cancel"></button>
+                    <button type="button" id="save-novel-modal-btn" class="btn btn--primary" data-i18n-key="btn_save"></button>
                 </div>
             </div>
         </div>
@@ -174,8 +176,8 @@
                     <textarea id="chapter-modal-content-input" class="form-control" rows="10" required></textarea>
                  </div>
                 <div class="modal-actions">
-                    <button id="cancel-chapter-modal-btn" class="btn btn--secondary" data-i18n-key="btn_cancel"></button>
-                    <button id="save-chapter-modal-btn" class="btn btn--primary" data-i18n-key="btn_save_chapter"></button>
+                    <button type="button" id="cancel-chapter-modal-btn" class="btn btn--secondary" data-i18n-key="btn_cancel"></button>
+                    <button type="button" id="save-chapter-modal-btn" class="btn btn--primary" data-i18n-key="btn_save_chapter"></button>
                 </div>
              </div>
         </div>
@@ -190,7 +192,6 @@
                         <option value="Inter, Arial, sans-serif">Inter (Default)</option>
                         <option value="Arial, sans-serif">Arial</option>
                         <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                        <option value="'Source Code Pro', monospace">Source Code Pro</option>
                      </select>
                 </div>
                  <div class="form-group">
@@ -209,7 +210,7 @@
                     <input type="range" id="line-height-slider" class="form-control-range" min="1.2" max="2.5" step="0.1" value="1.6" aria-labelledby="line-height-value">
                 </div>
                 <div class="modal-actions modal-actions--centered">
-                    <button id="close-reader-settings-modal-btn" class="btn btn--secondary" data-i18n-key="btn_close"></button>
+                    <button type="button" id="close-reader-settings-modal-btn" class="btn btn--secondary" data-i18n-key="btn_close"></button>
                 </div>
             </div>
         </div>

@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ariaLabelKey) element.setAttribute('aria-label', this.get(ariaLabelKey));
         }
         translatePage(rootElement = doc.body) {
-            if (appTitleEl) appTitleEl.textContent = this.get('app_title');
+            appTitleEl.textContent = this.get('app_title');
             rootElement.querySelectorAll('[data-i18n-key], [data-i18n-placeholder], [data-i18n-aria-label]')
                 .forEach(el => this.translateElement(el));
             updateThemeToggleButtonAriaLabel();
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveReaderPosition() {
-        if (!readerPage.classList.contains('active') || !currentNovelId || currentChapterIndex < 0 || !readerMainContent) return;
+        if (!readerPage.classList.contains('active') || !currentNovelId || currentChapterIndex < 0) return;
         const novel = findNovel(currentNovelId);
         if (!novel) return;
         novel.lastReadChapterIndex = currentChapterIndex;
@@ -519,11 +519,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const lineSpacing = localStorage.getItem(LINE_SPACING_KEY) || DEFAULT_LINE_SPACING;
         applyTheme(theme, false);
         applyReaderStyles(font, fontSize, lineSpacing, false);
-        if (fontSelect) fontSelect.value = font;
-        if (fontSizeSelect) fontSizeSelect.value = fontSize;
-        if (lineHeightSlider) lineHeightSlider.value = lineSpacing;
-        if (themeToggleBtn) themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
-        if (lineHeightValueSpan) lineHeightValueSpan.textContent = lineSpacing;
+        fontSelect.value = font;
+        fontSizeSelect.value = fontSize;
+        lineHeightSlider.value = lineSpacing;
+        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
+        lineHeightValueSpan.textContent = lineSpacing;
     }
 
     function saveSetting(key, value) {
@@ -532,13 +532,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateThemeToggleButtonAriaLabel() {
-        if (!themeToggleBtn) return;
         themeToggleBtn.setAttribute('aria-label', i18n.get(doc.body.classList.contains('dark-mode') ? 'theme_switch_light' : 'theme_switch_dark'));
     }
 
     function applyTheme(theme, save = true) {
         doc.body.classList.toggle('dark-mode', theme === 'dark');
-        if (themeToggleBtn) themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
+        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
         updateThemeToggleButtonAriaLabel();
         const metaLight = doc.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]');
         const metaDark = doc.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]');
@@ -557,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
         rootStyle.setProperty('--font-family-reader', font);
         rootStyle.setProperty('--font-size-reader', size);
         rootStyle.setProperty('--line-height-reader', lineHeight);
-        if (lineHeightValueSpan) lineHeightValueSpan.textContent = lineHeight;
+        lineHeightValueSpan.textContent = lineHeight;
         if (save) {
             saveSetting(FONT_KEY, font);
             saveSetting(FONT_SIZE_KEY, size);
@@ -566,7 +565,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateLanguageSelector() {
-        if (!languageSelect) return;
         languageSelect.innerHTML = '';
         i18n.getAvailableLanguages().forEach(lang => {
             const opt = doc.createElement('option');
@@ -686,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const novel = findNovel(novelId);
         if (!novel) return;
         if (opfsRoot) {
-            try { await getNovelDir(novelId).then(dir => dir.remove({recursive: true})); } // Simpler way to remove dir
+            try { await getNovelDir(novelId).then(dir => dir.remove({recursive: true})); }
             catch (error) {
                 if (error.name !== 'NotFoundError') alert(i18n.get('alert_error_deleting_opfs_dir', { title: novel.title || i18n.get('text_untitled_novel') }));
             }
@@ -719,17 +717,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settingsCleared) {
             i18n.setLanguage(DEFAULT_LANG); applyTheme(DEFAULT_THEME);
             applyReaderStyles(DEFAULT_FONT, DEFAULT_FONT_SIZE, DEFAULT_LINE_SPACING);
-            if (fontSelect) fontSelect.value = DEFAULT_FONT;
-            if (fontSizeSelect) fontSizeSelect.value = DEFAULT_FONT_SIZE;
-            if (lineHeightSlider) lineHeightSlider.value = DEFAULT_LINE_SPACING;
-            if (lineHeightValueSpan) lineHeightValueSpan.textContent = DEFAULT_LINE_SPACING;
+            fontSelect.value = DEFAULT_FONT;
+            fontSizeSelect.value = DEFAULT_FONT_SIZE;
+            lineHeightSlider.value = DEFAULT_LINE_SPACING;
+            lineHeightValueSpan.textContent = DEFAULT_LINE_SPACING;
         }
         renderNovelList(); await showPage('home-page');
         if (settingsCleared && opfsCompletelyCleared) alert(i18n.get('alert_delete_all_success'));
     }
 
     function renderNovelList(filterTerm = '') {
-        if (!novelListEl) return;
         novelListEl.innerHTML = '';
         const lowerFilter = filterTerm.toLowerCase().trim();
         const filtered = novelsMetadata.filter(n => !lowerFilter ||
@@ -737,7 +734,9 @@ document.addEventListener('DOMContentLoaded', () => {
             (n.author || '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter)
         );
         const noNovels = novelsMetadata.length === 0;
-        if (exportButton) { exportButton.disabled = noNovels; exportButton.setAttribute('aria-disabled', String(noNovels)); }
+        exportButton.disabled = noNovels;
+        exportButton.setAttribute('aria-disabled', String(noNovels));
+
         if (filtered.length === 0) {
             const li = doc.createElement('li'); li.className = 'list-placeholder';
             li.textContent = i18n.get(noNovels ? 'placeholder_no_novels' : 'placeholder_no_matching_novels', { searchTerm: filterTerm });
@@ -766,31 +765,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadNovelInfoPage(novelId) {
         const novel = findNovel(novelId);
         if (!novel) { alert(i18n.get('alert_error_finding_novel_info')); showPage('home-page'); return; }
-        if (novelInfoTitleEl) novelInfoTitleEl.textContent = novel.title || i18n.get('text_untitled_novel');
-        if (novelInfoAuthorEl) novelInfoAuthorEl.textContent = novel.author || i18n.get('details_na');
-        if (novelInfoGenreEl) novelInfoGenreEl.textContent = novel.genre || i18n.get('details_na');
-        if (novelInfoDescriptionEl) novelInfoDescriptionEl.textContent = novel.description || i18n.get('details_no_description');
+        novelInfoTitleEl.textContent = novel.title || i18n.get('text_untitled_novel');
+        novelInfoAuthorEl.textContent = novel.author || i18n.get('details_na');
+        novelInfoGenreEl.textContent = novel.genre || i18n.get('details_na');
+        novelInfoDescriptionEl.textContent = novel.description || i18n.get('details_no_description');
         const lastReadIdx = novel.lastReadChapterIndex;
         const lastReadCh = findChapter(novelId, lastReadIdx);
         const hasChaps = novel.chapters?.length > 0;
-        if (novelInfoLastReadEl) {
-            novelInfoLastReadEl.onclick = null; novelInfoLastReadEl.onkeydown = null;
-            novelInfoLastReadEl.classList.remove('clickable', 'not-clickable');
-            novelInfoLastReadEl.removeAttribute('role'); novelInfoLastReadEl.tabIndex = -1; novelInfoLastReadEl.removeAttribute('aria-label');
-            if (hasChaps && lastReadCh && lastReadIdx !== -1) {
-                const chTitle = lastReadCh.title || i18n.get('text_chapter_placeholder', { index: lastReadIdx + 1 });
-                novelInfoLastReadEl.textContent = chTitle; novelInfoLastReadEl.classList.add('clickable');
-                novelInfoLastReadEl.setAttribute('role', 'link'); novelInfoLastReadEl.tabIndex = 0;
-                novelInfoLastReadEl.setAttribute('aria-label', i18n.get('aria_continue_reading', { chapterTitle: chTitle }));
-                const handler = (e) => {
-                    if (e.type==='click'||(e.type==='keydown'&&(e.key==='Enter'||e.key===' '))) {
-                        e.preventDefault(); currentChapterIndex = lastReadIdx;
-                        loadReaderPage(currentNovelId, currentChapterIndex).then(() => showPage('reader-page'));
-                    }
-                };
-                novelInfoLastReadEl.addEventListener('click', handler); novelInfoLastReadEl.addEventListener('keydown', handler);
-            } else { novelInfoLastReadEl.textContent = i18n.get('details_never_read'); novelInfoLastReadEl.classList.add('not-clickable'); }
-        }
+
+        novelInfoLastReadEl.onclick = null; novelInfoLastReadEl.onkeydown = null;
+        novelInfoLastReadEl.classList.remove('clickable', 'not-clickable');
+        novelInfoLastReadEl.removeAttribute('role'); novelInfoLastReadEl.tabIndex = -1; novelInfoLastReadEl.removeAttribute('aria-label');
+        if (hasChaps && lastReadCh && lastReadIdx !== -1) {
+            const chTitle = lastReadCh.title || i18n.get('text_chapter_placeholder', { index: lastReadIdx + 1 });
+            novelInfoLastReadEl.textContent = chTitle; novelInfoLastReadEl.classList.add('clickable');
+            novelInfoLastReadEl.setAttribute('role', 'link'); novelInfoLastReadEl.tabIndex = 0;
+            novelInfoLastReadEl.setAttribute('aria-label', i18n.get('aria_continue_reading', { chapterTitle: chTitle }));
+            const handler = (e) => {
+                if (e.type==='click'||(e.type==='keydown'&&(e.key==='Enter'||e.key===' '))) {
+                    e.preventDefault(); currentChapterIndex = lastReadIdx;
+                    loadReaderPage(currentNovelId, currentChapterIndex).then(() => showPage('reader-page'));
+                }
+            };
+            novelInfoLastReadEl.addEventListener('click', handler); novelInfoLastReadEl.addEventListener('keydown', handler);
+        } else { novelInfoLastReadEl.textContent = i18n.get('details_never_read'); novelInfoLastReadEl.classList.add('not-clickable'); }
+
         renderChapterList(novelId, chapterSearchInput ? chapterSearchInput.value : '');
     }
 
@@ -804,14 +803,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderChapterList(novelId, filterTerm = '') {
-        if (!chapterListEl) return;
         const novel = findNovel(novelId); chapterListEl.innerHTML = '';
         const chapters = novel?.chapters || [];
         const lowerFilter = filterTerm.toLowerCase().trim();
         const filtered = chapters.map((ch, idx) => ({ ...ch, originalIndex: idx }))
             .filter(ch => !lowerFilter || (ch.title || '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter));
         const hasAnyChaps = chapters.length > 0;
-        if (bulkDownloadBtn) { bulkDownloadBtn.disabled = !hasAnyChaps; bulkDownloadBtn.setAttribute('aria-disabled', String(!hasAnyChaps));}
+        bulkDownloadBtn.disabled = !hasAnyChaps;
+        bulkDownloadBtn.setAttribute('aria-disabled', String(!hasAnyChaps));
+
         if (filtered.length === 0) {
             const li = doc.createElement('li'); li.className = 'list-placeholder';
             li.textContent = i18n.get(hasAnyChaps ? 'placeholder_no_matching_chapters' : 'placeholder_no_chapters', { searchTerm: filterTerm });
@@ -828,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mainDiv.append(titleH4, metaP);
             const actionsDiv = doc.createElement('div'); actionsDiv.className = 'chapter-card__actions';
             const createBtn = (icon, ariaKey, ...cls) => {
-                const btn = doc.createElement('button'); btn.textContent = icon;
+                const btn = doc.createElement('button'); btn.type = 'button'; btn.textContent = icon;
                 btn.setAttribute('aria-label', i18n.get(ariaKey, { chapterTitle: chTitle }));
                 btn.classList.add('btn', 'btn--icon', ...cls); return btn;
             };
@@ -860,17 +860,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadReaderPage(novelId, chapterIndexToLoad) {
         const novel = findNovel(novelId); const chapter = findChapter(novelId, chapterIndexToLoad);
-        if (!chapter || !novel || !readerChapterTitleEl || !readerContentEl || !prevChapterBtn || !nextChapterBtn) {
-            if(readerChapterTitleEl) readerChapterTitleEl.textContent = i18n.get('text_error_formatting_timestamp');
-            if(readerContentEl) readerContentEl.textContent = i18n.get('text_error_loading_chapter');
-            if(prevChapterBtn) { prevChapterBtn.disabled = true; prevChapterBtn.setAttribute('aria-disabled', 'true');}
-            if(nextChapterBtn) { nextChapterBtn.disabled = true; nextChapterBtn.setAttribute('aria-disabled', 'true');}
+        if (!chapter || !novel) {
+            readerChapterTitleEl.textContent = i18n.get('text_error_formatting_timestamp');
+            readerContentEl.textContent = i18n.get('text_error_loading_chapter');
+            prevChapterBtn.disabled = true; prevChapterBtn.setAttribute('aria-disabled', 'true');
+            nextChapterBtn.disabled = true; nextChapterBtn.setAttribute('aria-disabled', 'true');
             return;
         }
         currentChapterIndex = chapterIndexToLoad;
         readerChapterTitleEl.textContent = chapter.title || i18n.get('text_chapter_placeholder', { index: currentChapterIndex + 1 });
         readerContentEl.textContent = i18n.get('text_loading_chapter_content'); readerContentEl.style.color = '';
-        if (readerMainContent) readerMainContent.scrollTop = 0;
+        readerMainContent.scrollTop = 0;
         const rawContent = await readChapterContent(novelId, currentChapterIndex);
         if (rawContent.startsWith(i18n.get('text_error_prefix'))) {
             readerContentEl.textContent = rawContent; readerContentEl.style.color = 'var(--color-accent-danger)';
@@ -881,7 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nextChapterBtn.setAttribute('aria-disabled', String(nextChapterBtn.disabled));
         requestAnimationFrame(() => {
             if (readerPage.classList.contains('active') && currentNovelId === novelId &&
-                currentChapterIndex === novel.lastReadChapterIndex && readerMainContent) {
+                currentChapterIndex === novel.lastReadChapterIndex) {
                 readerMainContent.scrollTop = novel.lastReadScrollTop;
             }
         });
@@ -902,13 +902,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function openNovelModal(novelIdToEdit = null) {
         const isEditing = !!novelIdToEdit; const novel = isEditing ? findNovel(novelIdToEdit) : null;
         if (isEditing && !novel) { alert(i18n.get('alert_error_finding_novel_info')); return; }
-        if(novelModalTitleHeading) novelModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_novel_title' : 'modal_add_novel_title');
-        if(novelModalIdInput) novelModalIdInput.value = novelIdToEdit || '';
-        if(novelModalTitleInput) novelModalTitleInput.value = novel?.title || '';
-        if(novelModalAuthorInput) novelModalAuthorInput.value = novel?.author || '';
-        if(novelModalGenreInput) novelModalGenreInput.value = novel?.genre || '';
-        if(novelModalDescriptionInput) novelModalDescriptionInput.value = novel?.description || '';
-        openModal(novelModal); if(novelModalTitleInput) novelModalTitleInput.focus();
+        novelModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_novel_title' : 'modal_add_novel_title');
+        novelModalIdInput.value = novelIdToEdit || '';
+        novelModalTitleInput.value = novel?.title || '';
+        novelModalAuthorInput.value = novel?.author || '';
+        novelModalGenreInput.value = novel?.genre || '';
+        novelModalDescriptionInput.value = novel?.description || '';
+        openModal(novelModal); novelModalTitleInput.focus();
     }
     function closeNovelModal() { closeModal(novelModal); }
     async function saveNovelFromModal() {
@@ -937,13 +937,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEditing = chapterIndexToEdit !== null && chapterIndexToEdit >= 0;
         const chapter = isEditing ? findChapter(novelId, chapterIndexToEdit) : null;
         if (isEditing && !chapter) { alert(i18n.get('alert_error_finding_chapter_to_edit')); return; }
-        if(chapterModalTitleHeading) chapterModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_chapter_title' : 'modal_add_chapter_title');
-        if(chapterModalNovelIdInput) chapterModalNovelIdInput.value = novelId;
-        if(chapterModalIndexInput) chapterModalIndexInput.value = isEditing ? String(chapterIndexToEdit) : '';
-        if(chapterModalTitleInput) chapterModalTitleInput.value = chapter?.title || '';
-        if(chapterModalContentInput) { chapterModalContentInput.value = ''; chapterModalContentInput.disabled = true; }
-        openModal(chapterModal); if(chapterModalTitleInput) chapterModalTitleInput.focus();
-        if (isEditing && chapterModalContentInput) {
+        chapterModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_chapter_title' : 'modal_add_chapter_title');
+        chapterModalNovelIdInput.value = novelId;
+        chapterModalIndexInput.value = isEditing ? String(chapterIndexToEdit) : '';
+        chapterModalTitleInput.value = chapter?.title || '';
+        chapterModalContentInput.value = ''; chapterModalContentInput.disabled = true;
+        openModal(chapterModal); chapterModalTitleInput.focus();
+        if (isEditing) {
             chapterModalContentInput.value = i18n.get('text_loading_chapter_modal_content');
             try {
                 const rawContent = await readChapterContent(novelId, chapterIndexToEdit);
@@ -951,7 +951,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 else chapterModalContentInput.value = rawContent;
             } catch(e) { chapterModalContentInput.value = i18n.get('text_critical_error_loading_chapter_modal_content', { errorMessage: e.message }); }
             finally { chapterModalContentInput.disabled = false; }
-        } else if (chapterModalContentInput) chapterModalContentInput.disabled = false;
+        } else {
+            chapterModalContentInput.disabled = false;
+        }
     }
     function closeChapterModal() { closeModal(chapterModal); }
     async function saveChapterFromModal() {
@@ -982,10 +984,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openReaderSettingsModal() {
-        if(fontSelect) fontSelect.value = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
-        if(fontSizeSelect) fontSizeSelect.value = localStorage.getItem(FONT_SIZE_KEY) || DEFAULT_FONT_SIZE;
-        if(lineHeightSlider) lineHeightSlider.value = localStorage.getItem(LINE_SPACING_KEY) || DEFAULT_LINE_SPACING;
-        if(lineHeightValueSpan) lineHeightValueSpan.textContent = lineHeightSlider.value;
+        fontSelect.value = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
+        fontSizeSelect.value = localStorage.getItem(FONT_SIZE_KEY) || DEFAULT_FONT_SIZE;
+        lineHeightSlider.value = localStorage.getItem(LINE_SPACING_KEY) || DEFAULT_LINE_SPACING;
+        lineHeightValueSpan.textContent = lineHeightSlider.value;
         openModal(readerSettingsModal);
     }
     function closeReaderSettingsModal() { closeModal(readerSettingsModal); }
@@ -1028,14 +1030,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerImport() {
         if (!opfsRoot || typeof DecompressionStream === 'undefined') { alert(i18n.get('alert_import_failed_apis')); return; }
         if (novelsMetadata.length > 0 && !confirm(i18n.get('alert_confirm_import_overwrite'))) return;
-        if (importFileInput) importFileInput.click();
+        importFileInput.click();
     }
 
     async function importData(file) {
-        if (!file || !file.name.endsWith('.novelarchive.gz')) { alert(i18n.get('alert_invalid_import_file')); if(importFileInput) importFileInput.value = ''; return; }
-        if (!opfsRoot) { alert(i18n.get('alert_import_failed_storage_not_ready')); if(importFileInput) importFileInput.value = ''; return; }
+        if (!file || !file.name.endsWith('.novelarchive.gz')) { alert(i18n.get('alert_invalid_import_file')); importFileInput.value = ''; return; }
+        if (!opfsRoot) { alert(i18n.get('alert_import_failed_storage_not_ready')); importFileInput.value = ''; return; }
         const origAria = importButton.getAttribute('aria-label');
-        importButton.disabled = true; if(importFileInput) importFileInput.disabled = true;
+        importButton.disabled = true; importFileInput.disabled = true;
         importButton.setAttribute('aria-label', i18n.get('aria_importing_backup'));
         let prevSettingsBackup = null;
         try {
@@ -1068,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 importedNovelsCount++;
             }
-            await saveNovelsMetadata(); // Final save for any generated opfsFileNames
+            await saveNovelsMetadata();
             loadSettings(); i18n.translatePage(); renderNovelList(); await showPage('home-page');
             let successMsg = i18n.get('alert_import_success', { count: importedNovelsCount });
             if (chapterSaveErrors > 0) successMsg += `\n\n${i18n.get('alert_import_warning_chapter_errors', { count: chapterSaveErrors })}`;
@@ -1079,20 +1081,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     Object.keys(prevSettingsBackup).forEach(k => { if (prevSettingsBackup[k]) localStorage.setItem(k, prevSettingsBackup[k]); else localStorage.removeItem(k); });
                     i18n.init(prevSettingsBackup.language); loadSettings();
-                    if(opfsRoot) { // Try to clean OPFS from failed import
+                    if(opfsRoot) {
                         for await (const entry of opfsRoot.values()) if (entry.kind === 'directory' || entry.name === METADATA_OPFS_FILENAME) {
                             await opfsRoot.removeEntry(entry.name, { recursive: entry.kind === 'directory' }).catch(console.warn);
                         }
                     }
-                    await loadNovelsMetadata(); // Will be empty if OPFS clean succeeded
+                    await loadNovelsMetadata();
                     i18n.translatePage(); renderNovelList(); await showPage('home-page');
                     alert(i18n.get('alert_rollback_incomplete'));
                 } catch (rbErr) { alert(i18n.get('alert_rollback_failed')); }
             } else alert(i18n.get('alert_rollback_failed_no_backup'));
         } finally {
-            if(importButton) importButton.disabled = false;
-            if(importFileInput) { importFileInput.disabled = false; importFileInput.value = ''; }
-            if(importButton) importButton.setAttribute('aria-label', origAria || i18n.get('aria_import_archive'));
+            importButton.disabled = false;
+            importFileInput.disabled = false; importFileInput.value = '';
+            importButton.setAttribute('aria-label', origAria || i18n.get('aria_import_archive'));
         }
     }
 
@@ -1145,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const content = await readChapterContent(novelId, i);
                 if (content.startsWith(i18n.get('text_error_prefix'))) throw new Error(content.substring(i18n.get('text_error_prefix').length + 1));
-                combined += content + "\n\n"; succCount++;
+                combined += `${content}\n\n`; succCount++;
             } catch (e) { combined += `### ${i18n.get('text_error_prefix')} ${i18n.get('text_error_reading_file',{errorMessage: e.message})} ###\n\n`; errCount++; }
             combined += "---\n\n";
         }
@@ -1169,11 +1171,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (doc.exitFullscreen) doc.exitFullscreen();
     }
     function updateFullscreenButtonAriaLabel() {
-         if (!readerFullscreenBtn) return;
          readerFullscreenBtn.setAttribute('aria-label', i18n.get(doc.fullscreenElement ? 'aria_exit_fullscreen' : 'aria_enter_fullscreen'));
     }
     function updateFullscreenButtonVisual() {
-        if (!readerFullscreenBtn) return;
         readerFullscreenBtn.textContent = doc.fullscreenElement ? '↙️' : '⛶';
         updateFullscreenButtonAriaLabel();
     }

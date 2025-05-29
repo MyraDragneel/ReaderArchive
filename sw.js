@@ -1,11 +1,11 @@
-const CACHE_NAME = 'local-novel-reader-cache-v12.8'; // Incremented version
+const CACHE_NAME = 'local-novel-reader-cache-v13.0'; // Incremented version
 const urlsToCache = [
   './',
   'index.html',
   'style.css',
   'script.js',
   'manifest.json',
-  'https://fonts.googleapis.com/css2?family=Source+Code+Pro&family=Inter:wght@400;500;600;700&display=swap' // Updated Google Fonts URL
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' // Updated Google Fonts URL
 ];
 
 self.addEventListener('install', event => {

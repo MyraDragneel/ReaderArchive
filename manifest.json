@@ -1,7 +1,7 @@
 {
   "name": "Local Novel Reader",
-  "short_name": "NovelReader",
-  "description": "A simple PWA to store and read novels locally using OPFS.",
+  "short_name": "Novel Reader",
+  "description": "store and read novels locally using OPFS",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
