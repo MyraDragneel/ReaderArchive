@@ -429,7 +429,7 @@ body.dark-mode select.form-control {
 @keyframes fadeOutModalBg { from { opacity: 1; backdrop-filter: blur(8px); } to { opacity: 0; backdrop-filter: blur(0px); } }
 
 .modal-content {
-    background-color: color-mix(in srgb, var(--color-bg-secondary) 50%, transparent);
+    background-color: color-mix(in srgb, var(--color-bg-secondary) 70%, transparent);
     padding: var(--spacing-lg); border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg); width: 100%; max-width: 550px;
     display: flex; flex-direction: column; gap: var(--spacing-md);
