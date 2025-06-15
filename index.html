@@ -7,8 +7,8 @@
     <title data-i18n-key="app_title"></title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#F8F8F8" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1C1C1E" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,17 +16,16 @@
 <body>
     <div id="app-container">
 
-        <!-- Home Page -->
         <div id="home-page" class="page active">
             <header class="app-header">
                 <h1 class="app-header__title" data-i18n-key="home_header"></h1>
                 <div class="app-header__actions">
-                    <button type="button" id="add-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_add_novel">➕</button>
+                    <button type="button" id="add-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_add_novel"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z"></path></svg></button>
                     <button type="button" id="import-btn" class="btn btn--icon" data-i18n-aria-label="aria_import_archive">📥</button>
                     <input type="file" id="import-file-input" accept=".novelarchive.gz" aria-hidden="true">
                     <button type="button" id="export-btn" class="btn btn--icon" data-i18n-aria-label="aria_export_all">📤</button>
                     <button type="button" id="theme-toggle-btn" class="btn btn--icon" data-i18n-aria-label="aria_toggle_theme">🌓</button>
-                    <button type="button" id="settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_open_settings">⚙️</button>
+                    <button type="button" id="settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_open_settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg></button>
                 </div>
             </header>
             <div class="search-bar">
@@ -39,10 +38,9 @@
             </main>
         </div>
 
-        <!-- Settings Page -->
         <div id="settings-page" class="page">
             <header class="app-header">
-                <button type="button" class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home">⬅️</button>
+                <button type="button" class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg></button>
                 <h1 class="app-header__title" data-i18n-key="settings_header"></h1>
                 <div class="app-header__actions-spacer"></div>
             </header>
@@ -51,37 +49,33 @@
                     <h2 id="language-settings-heading" class="section-title" data-i18n-key="settings_language_header"></h2>
                     <div class="form-group">
                         <label for="language-select" class="form-label visually-hidden" data-i18n-key="settings_language_label"></label>
-                        <select id="language-select" class="form-control" data-i18n-aria-label="aria_select_language">
-                        </select>
+                        <select id="language-select" class="form-control" data-i18n-aria-label="aria_select_language"></select>
                     </div>
                 </section>
                 <hr class="divider">
                 <section class="settings-section danger-zone" aria-labelledby="danger-zone-heading">
                     <h2 id="danger-zone-heading" class="section-title danger-zone__title" data-i18n-key="danger_zone_header"></h2>
                     <p class="danger-zone__description" data-i18n-key="danger_zone_desc"></p>
-                    <button type="button" id="delete-all-data-btn" class="btn btn--danger btn--full-width" data-i18n-key="btn_delete_all_data"></button>
+                    <button type="button" id="delete-all-data-btn" class="btn btn--danger btn--full-width"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"></path></svg><span data-i18n-key="btn_delete_all_data"></span></button>
                 </section>
             </main>
         </div>
 
-        <!-- Novel Info Page -->
         <div id="novel-info-page" class="page">
             <header class="app-header">
-                 <button type="button" class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home">⬅️</button>
+                 <button type="button" class="btn btn--icon back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg></button>
                  <h1 id="novel-info-title" class="app-header__title app-header__title--ellipsis"></h1>
                  <div class="app-header__actions">
-                     <button type="button" id="edit-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_edit_novel_meta">✏️</button>
-                     <button type="button" id="delete-novel-btn" class="btn btn--icon btn--icon-danger" data-i18n-aria-label="aria_delete_this_novel">🗑️</button>
+                     <button type="button" id="edit-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_edit_novel_meta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg></button>
+                     <button type="button" id="delete-novel-btn" class="btn btn--icon btn--icon-danger" data-i18n-aria-label="aria_delete_this_novel"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
                  </div>
             </header>
             <main class="app-main">
                 <section id="novel-metadata" class="novel-details-section" aria-labelledby="novel-metadata-heading">
                     <h2 id="novel-metadata-heading" class="visually-hidden" data-i18n-key="details_novel_details"></h2>
-                    <div class="novel-meta-item">
-                        <p><strong data-i18n-key="details_author"></strong> <span id="novel-info-author"></span></p>
-                    </div>
-                    <div class="novel-meta-item">
-                        <p><strong data-i18n-key="details_genre"></strong> <span id="novel-info-genre"></span></p>
+                    <div class="novel-meta-grid">
+                        <strong data-i18n-key="details_author"></strong> <span id="novel-info-author"></span>
+                        <strong data-i18n-key="details_genre"></strong> <span id="novel-info-genre"></span>
                     </div>
                     <div class="novel-description">
                         <strong data-i18n-key="details_description"></strong>
@@ -97,8 +91,8 @@
                      <div class="section-header">
                          <h2 id="chapters-heading" class="section-title" data-i18n-key="details_chapters"></h2>
                          <div class="button-group">
-                             <button type="button" id="add-chapter-btn" class="btn btn--primary" data-i18n-key="btn_add_chapter"></button>
-                             <button type="button" id="bulk-download-chapters-btn" class="btn btn--secondary" disabled data-i18n-key="btn_download_all_chapters"></button>
+                             <button type="button" id="add-chapter-btn" class="btn btn--primary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z"></path></svg><span data-i18n-key="btn_add_chapter"></span></button>
+                             <button type="button" id="bulk-download-chapters-btn" class="btn btn--secondary" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg><span data-i18n-key="btn_download_all_chapters"></span></button>
                          </div>
                      </div>
                      <div class="search-bar search-bar--nested">
@@ -111,14 +105,16 @@
             </main>
         </div>
 
-        <!-- Reader Page -->
         <div id="reader-page" class="page">
             <header class="app-header app-header--reader">
-                 <button type="button" class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info">⬅️</button>
+                 <button type="button" class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg></button>
                  <h2 id="reader-chapter-title" class="app-header__title app-header__title--ellipsis"></h2>
                  <div class="app-header__actions">
-                    <button type="button" id="reader-fullscreen-btn" class="btn btn--icon" data-i18n-aria-label="aria_enter_fullscreen">⛶</button>
-                    <button type="button" id="reader-settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_reader_settings">Aa</button>
+                    <button type="button" id="reader-fullscreen-btn" class="btn btn--icon" data-i18n-aria-label="aria_enter_fullscreen">
+                        <svg class="icon-enter-fullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"></path></svg>
+                        <svg class="icon-exit-fullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"></path></svg>
+                    </button>
+                    <button type="button" id="reader-settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_reader_settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"></path><style>path:first-child{font-size: 10px; transform: scale(1.5, 0.8) translate(-2px, 3px)} path:last-child{transform: scale(1, 1.2) translateY(-1.5px)}</style></svg></button>
                  </div>
             </header>
             <main id="reader-main-content" class="app-main app-main--reader">
@@ -127,13 +123,12 @@
                  </div>
             </main>
             <footer class="app-footer app-footer--reader">
-                 <button type="button" id="prev-chapter-btn" class="btn btn--navigation" disabled data-i18n-key="btn_previous"></button>
+                 <button type="button" id="prev-chapter-btn" class="btn btn--navigation" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg><span data-i18n-key="btn_previous"></span></button>
                  <button type="button" class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info">📖</button>
-                 <button type="button" id="next-chapter-btn" class="btn btn--navigation" disabled data-i18n-key="btn_next"></button>
+                 <button type="button" id="next-chapter-btn" class="btn btn--navigation" disabled><span data-i18n-key="btn_next"></span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button>
             </footer>
         </div>
 
-        <!-- Novel Modal -->
         <div id="novel-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="novel-modal-title-heading">
              <div class="modal-content">
                 <h2 id="novel-modal-title-heading" class="modal-title" data-i18n-key="modal_add_novel_title"></h2>
@@ -161,7 +156,6 @@
             </div>
         </div>
 
-        <!-- Chapter Modal -->
         <div id="chapter-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="chapter-modal-title-heading">
               <div class="modal-content">
                 <h2 id="chapter-modal-title-heading" class="modal-title" data-i18n-key="modal_add_chapter_title"></h2>
@@ -182,7 +176,6 @@
              </div>
         </div>
 
-        <!-- Reader Settings Modal -->
         <div id="reader-settings-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="reader-settings-title-heading">
             <div class="modal-content modal-content--reader-settings">
                 <h2 id="reader-settings-title-heading" class="modal-title" data-i18n-key="modal_reader_display_title"></h2>
@@ -195,15 +188,8 @@
                      </select>
                 </div>
                  <div class="form-group">
-                     <label for="font-size-select" class="form-label" data-i18n-key="form_font_size"></label>
-                     <select id="font-size-select" class="form-control" data-i18n-aria-label="aria_select_font_size">
-                        <option value="14px">14</option>
-                        <option value="16px">16</option>
-                        <option value="18px">18</option>
-                        <option value="20px">20</option>
-                        <option value="22px">22</option>
-                        <option value="24px">24</option>
-                    </select>
+                     <label for="font-size-slider" class="form-label"><span data-i18n-key="form_font_size"></span> (<span id="font-size-value">16</span>px)</label>
+                     <input type="range" id="font-size-slider" class="form-control-range" min="12" max="28" step="1" value="16" aria-labelledby="font-size-value">
                 </div>
                 <div class="form-group">
                     <label for="line-height-slider" class="form-label"><span data-i18n-key="form_line_spacing"></span> (<span id="line-height-value">1.6</span>)</label>

@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholder_search_novels: "Search novels by title or author...",
             aria_search_novels: "Search Novels",
             placeholder_loading_novels: "Loading novels...",
-            placeholder_no_novels: "No novels yet. Use ➕ to add one!",
+            placeholder_no_novels: "No novels yet. Use the ＋ button to add one!",
             placeholder_no_matching_novels: "No novels found matching \"{searchTerm}\".",
             text_unknown_author: "Unknown Author",
             aria_open_novel: "Open novel: {title}",
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             aria_select_language: "Select Language",
             danger_zone_header: "Danger Zone",
             danger_zone_desc: "This permanently removes all novels, chapters, and settings stored by this app in your browser.",
-            btn_delete_all_data: "🗑️ Delete All App Data",
+            btn_delete_all_data: "Delete All App Data",
             details_novel_details: "Novel Details",
             details_author: "Author:",
             details_genre: "Genre:",
@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
             details_no_description: "No description provided.",
             aria_continue_reading: "Continue reading: {chapterTitle}",
             details_chapters: "Chapters",
-            btn_add_chapter: "➕ Add Chapter",
-            btn_download_all_chapters: "💾 Download All (.txt)",
+            btn_add_chapter: "Add Chapter",
+            btn_download_all_chapters: "Download All (.txt)",
             placeholder_search_chapters: "Search chapters by title...",
             aria_search_chapters: "Search Chapters",
             placeholder_no_chapters: "No chapters added yet.",
@@ -65,8 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
             text_error_chapter_metadata_not_found: "Error: Chapter metadata not found.",
             text_error_file_storage_unavailable: "Error: File storage unavailable.",
             text_error_chapter_file_info_missing: "Error: Chapter file information missing.",
-            btn_previous: "⬅️ Previous",
-            btn_next: "Next ➡️",
+            btn_previous: "Previous",
+            btn_next: "Next",
             modal_add_novel_title: "Add New Novel",
             modal_edit_novel_title: "Edit Novel Details",
             form_title: "Title",
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             placeholder_search_novels: "Cari novel berdasarkan judul atau penulis...",
             aria_search_novels: "Cari Novel",
             placeholder_loading_novels: "Memuat novel...",
-            placeholder_no_novels: "Belum ada novel. Gunakan ➕ untuk menambah!",
+            placeholder_no_novels: "Belum ada novel. Gunakan tombol ＋ untuk menambah!",
             placeholder_no_matching_novels: "Tidak ada novel yang cocok dengan \"{searchTerm}\".",
             text_unknown_author: "Penulis Tidak Dikenal",
             aria_open_novel: "Buka novel: {title}",
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             aria_select_language: "Pilih Bahasa",
             danger_zone_header: "Zona Berbahaya",
             danger_zone_desc: "Ini akan menghapus secara permanen semua novel, bab, dan pengaturan yang disimpan oleh aplikasi ini di browser Anda.",
-            btn_delete_all_data: "🗑️ Hapus Semua Data Aplikasi",
+            btn_delete_all_data: "Hapus Semua Data Aplikasi",
             details_novel_details: "Detail Novel",
             details_author: "Penulis:",
             details_genre: "Genre:",
@@ -191,8 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
             details_no_description: "Tidak ada deskripsi.",
             aria_continue_reading: "Lanjutkan membaca: {chapterTitle}",
             details_chapters: "Bab",
-            btn_add_chapter: "➕ Tambah Bab",
-            btn_download_all_chapters: "💾 Unduh Semua (.txt)",
+            btn_add_chapter: "Tambah Bab",
+            btn_download_all_chapters: "Unduh Semua (.txt)",
             placeholder_search_chapters: "Cari bab berdasarkan judul...",
             aria_search_chapters: "Cari Bab",
             placeholder_no_chapters: "Belum ada bab ditambahkan.",
@@ -219,8 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
             text_error_chapter_metadata_not_found: "Kesalahan: Metadata bab tidak ditemukan.",
             text_error_file_storage_unavailable: "Kesalahan: Penyimpanan berkas tidak tersedia.",
             text_error_chapter_file_info_missing: "Kesalahan: Informasi berkas bab hilang.",
-            btn_previous: "⬅️ Sebelumnya",
-            btn_next: "Berikutnya ➡️",
+            btn_previous: "Sebelumnya",
+            btn_next: "Berikutnya",
             modal_add_novel_title: "Tambah Novel Baru",
             modal_edit_novel_title: "Edit Detail Novel",
             form_title: "Judul",
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const LANG_KEY = 'novelReaderLanguage_v2';
     const DEFAULT_THEME = 'light';
     const DEFAULT_FONT = 'Inter, Arial, sans-serif';
-    const DEFAULT_FONT_SIZE = '16px';
+    const DEFAULT_FONT_SIZE = '16';
     const DEFAULT_LINE_SPACING = '1.6';
     const DEFAULT_LANG = 'en';
     const MODAL_ANIMATION_DURATION = 200;
@@ -333,50 +333,53 @@ document.addEventListener('DOMContentLoaded', () => {
     let opfsRoot = null;
 
     const doc = document;
-    const appTitleEl = doc.querySelector('title[data-i18n-key="app_title"]');
-    const pages = doc.querySelectorAll('.page');
-    const homePage = doc.getElementById('home-page');
-    const readerPage = doc.getElementById('reader-page');
-    const themeToggleBtn = doc.getElementById('theme-toggle-btn');
-    const languageSelect = doc.getElementById('language-select');
-    const novelListEl = doc.getElementById('novel-list');
-    const novelSearchInput = doc.getElementById('novel-search');
-    const importFileInput = doc.getElementById('import-file-input');
-    const exportButton = doc.getElementById('export-btn');
-    const importButton = doc.getElementById('import-btn');
-    const deleteAllDataBtn = doc.getElementById('delete-all-data-btn');
-    const novelInfoTitleEl = doc.getElementById('novel-info-title');
-    const novelInfoAuthorEl = doc.getElementById('novel-info-author');
-    const novelInfoGenreEl = doc.getElementById('novel-info-genre');
-    const novelInfoDescriptionEl = doc.getElementById('novel-info-description');
-    const novelInfoLastReadEl = doc.getElementById('novel-info-last-read');
-    const chapterListEl = doc.getElementById('chapter-list');
-    const chapterSearchInput = doc.getElementById('chapter-search');
-    const bulkDownloadBtn = doc.getElementById('bulk-download-chapters-btn');
-    const readerMainContent = doc.getElementById('reader-main-content');
-    const readerContentEl = doc.getElementById('reader-content');
-    const readerChapterTitleEl = doc.getElementById('reader-chapter-title');
-    const prevChapterBtn = doc.getElementById('prev-chapter-btn');
-    const nextChapterBtn = doc.getElementById('next-chapter-btn');
-    const readerFullscreenBtn = doc.getElementById('reader-fullscreen-btn');
-    const novelModal = doc.getElementById('novel-modal');
-    const novelModalTitleHeading = doc.getElementById('novel-modal-title-heading');
-    const novelModalIdInput = doc.getElementById('novel-modal-id');
-    const novelModalTitleInput = doc.getElementById('novel-modal-title-input');
-    const novelModalAuthorInput = doc.getElementById('novel-modal-author-input');
-    const novelModalGenreInput = doc.getElementById('novel-modal-genre-input');
-    const novelModalDescriptionInput = doc.getElementById('novel-modal-description-input');
-    const chapterModal = doc.getElementById('chapter-modal');
-    const chapterModalTitleHeading = doc.getElementById('chapter-modal-title-heading');
-    const chapterModalNovelIdInput = doc.getElementById('chapter-modal-novel-id');
-    const chapterModalIndexInput = doc.getElementById('chapter-modal-index');
-    const chapterModalTitleInput = doc.getElementById('chapter-modal-title-input');
-    const chapterModalContentInput = doc.getElementById('chapter-modal-content-input');
-    const readerSettingsModal = doc.getElementById('reader-settings-modal');
-    const fontSelect = doc.getElementById('font-select');
-    const fontSizeSelect = doc.getElementById('font-size-select');
-    const lineHeightSlider = doc.getElementById('line-height-slider');
-    const lineHeightValueSpan = doc.getElementById('line-height-value');
+    const DOM = {
+        appTitleEl: doc.querySelector('title[data-i18n-key="app_title"]'),
+        pages: doc.querySelectorAll('.page'),
+        homePage: doc.getElementById('home-page'),
+        readerPage: doc.getElementById('reader-page'),
+        themeToggleBtn: doc.getElementById('theme-toggle-btn'),
+        languageSelect: doc.getElementById('language-select'),
+        novelListEl: doc.getElementById('novel-list'),
+        novelSearchInput: doc.getElementById('novel-search'),
+        importFileInput: doc.getElementById('import-file-input'),
+        exportButton: doc.getElementById('export-btn'),
+        importButton: doc.getElementById('import-btn'),
+        deleteAllDataBtn: doc.getElementById('delete-all-data-btn'),
+        novelInfoTitleEl: doc.getElementById('novel-info-title'),
+        novelInfoAuthorEl: doc.getElementById('novel-info-author'),
+        novelInfoGenreEl: doc.getElementById('novel-info-genre'),
+        novelInfoDescriptionEl: doc.getElementById('novel-info-description'),
+        novelInfoLastReadEl: doc.getElementById('novel-info-last-read'),
+        chapterListEl: doc.getElementById('chapter-list'),
+        chapterSearchInput: doc.getElementById('chapter-search'),
+        bulkDownloadBtn: doc.getElementById('bulk-download-chapters-btn'),
+        readerMainContent: doc.getElementById('reader-main-content'),
+        readerContentEl: doc.getElementById('reader-content'),
+        readerChapterTitleEl: doc.getElementById('reader-chapter-title'),
+        prevChapterBtn: doc.getElementById('prev-chapter-btn'),
+        nextChapterBtn: doc.getElementById('next-chapter-btn'),
+        readerFullscreenBtn: doc.getElementById('reader-fullscreen-btn'),
+        novelModal: doc.getElementById('novel-modal'),
+        novelModalTitleHeading: doc.getElementById('novel-modal-title-heading'),
+        novelModalIdInput: doc.getElementById('novel-modal-id'),
+        novelModalTitleInput: doc.getElementById('novel-modal-title-input'),
+        novelModalAuthorInput: doc.getElementById('novel-modal-author-input'),
+        novelModalGenreInput: doc.getElementById('novel-modal-genre-input'),
+        novelModalDescriptionInput: doc.getElementById('novel-modal-description-input'),
+        chapterModal: doc.getElementById('chapter-modal'),
+        chapterModalTitleHeading: doc.getElementById('chapter-modal-title-heading'),
+        chapterModalNovelIdInput: doc.getElementById('chapter-modal-novel-id'),
+        chapterModalIndexInput: doc.getElementById('chapter-modal-index'),
+        chapterModalTitleInput: doc.getElementById('chapter-modal-title-input'),
+        chapterModalContentInput: doc.getElementById('chapter-modal-content-input'),
+        readerSettingsModal: doc.getElementById('reader-settings-modal'),
+        fontSelect: doc.getElementById('font-select'),
+        fontSizeSlider: doc.getElementById('font-size-slider'),
+        fontSizeValueSpan: doc.getElementById('font-size-value'),
+        lineHeightSlider: doc.getElementById('line-height-slider'),
+        lineHeightValueSpan: doc.getElementById('line-height-value'),
+    };
 
     class I18nService {
         constructor(translationsData) {
@@ -410,15 +413,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return text;
         }
         translateElement(element) {
-            const key = element.dataset.i18nKey;
-            const placeholderKey = element.dataset.i18nPlaceholder;
-            const ariaLabelKey = element.dataset.i18nAriaLabel;
-            if (key) element.textContent = this.get(key);
-            if (placeholderKey) element.placeholder = this.get(placeholderKey);
-            if (ariaLabelKey) element.setAttribute('aria-label', this.get(ariaLabelKey));
+            const { i18nKey, i18nPlaceholder, i18nAriaLabel } = element.dataset;
+            if (i18nKey) element.textContent = this.get(i18nKey);
+            if (i18nPlaceholder) element.placeholder = this.get(i18nPlaceholder);
+            if (i18nAriaLabel) element.setAttribute('aria-label', this.get(i18nAriaLabel));
         }
         translatePage(rootElement = doc.body) {
-            appTitleEl.textContent = this.get('app_title');
+            DOM.appTitleEl.textContent = this.get('app_title');
             rootElement.querySelectorAll('[data-i18n-key], [data-i18n-placeholder], [data-i18n-aria-label]')
                 .forEach(el => this.translateElement(el));
             updateThemeToggleButtonAriaLabel();
@@ -447,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!await initOPFS()) alert(i18n.get('alert_opfs_unavailable'));
         i18n.init();
         i18n.onLanguageChange(() => {
-            if (homePage.classList.contains('active')) renderNovelList(novelSearchInput.value);
+            if (DOM.homePage.classList.contains('active')) renderNovelList(DOM.novelSearchInput.value);
             if (doc.getElementById('novel-info-page').classList.contains('active') && currentNovelId) loadNovelInfoPage(currentNovelId);
         });
         loadSettings();
@@ -480,34 +481,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function saveReaderPosition() {
-        if (!readerPage.classList.contains('active') || !currentNovelId || currentChapterIndex < 0) return;
+        if (!DOM.readerPage.classList.contains('active') || !currentNovelId || currentChapterIndex < 0) return;
         const novel = findNovel(currentNovelId);
         if (!novel) return;
         novel.lastReadChapterIndex = currentChapterIndex;
-        novel.lastReadScrollTop = Math.round(readerMainContent.scrollTop);
+        novel.lastReadScrollTop = Math.round(DOM.readerMainContent.scrollTop);
         await saveNovelsMetadata();
     }
 
     async function showPage(pageId) {
-        if (doc.fullscreenElement && readerPage.classList.contains('active') && pageId !== 'reader-page') {
+        if (doc.fullscreenElement && DOM.readerPage.classList.contains('active') && pageId !== 'reader-page') {
             if (doc.exitFullscreen) doc.exitFullscreen().catch(err => console.error("Error exiting fullscreen:", err));
         }
-        if (readerPage.classList.contains('active') && pageId !== 'reader-page') await saveReaderPosition();
+        if (DOM.readerPage.classList.contains('active') && pageId !== 'reader-page') await saveReaderPosition();
 
         let activePageEl = null;
-        pages.forEach(p => {
+        DOM.pages.forEach(p => {
             const isActive = p.id === pageId;
             p.classList.toggle('active', isActive);
             if (isActive) activePageEl = p;
         });
-        if (pageId !== 'reader-page' || (pageId === 'reader-page' && !readerMainContent.scrollTop)) {
-            const contentArea = activePageEl?.querySelector('.app-main');
-            if (contentArea) contentArea.scrollTop = 0;
-            else if (activePageEl) activePageEl.scrollTop = 0;
-            else window.scrollTo(0, 0);
-        }
-        if (pageId !== 'home-page' && novelSearchInput) novelSearchInput.value = '';
-        if (pageId !== 'novel-info-page' && chapterSearchInput) chapterSearchInput.value = '';
+
+        const contentArea = activePageEl?.querySelector('.app-main');
+        if (contentArea) contentArea.scrollTop = 0;
+        else if (activePageEl) activePageEl.scrollTop = 0;
+
+        if (pageId !== 'home-page' && DOM.novelSearchInput) DOM.novelSearchInput.value = '';
+        if (pageId !== 'novel-info-page' && DOM.chapterSearchInput) DOM.chapterSearchInput.value = '';
         if (pageId === 'home-page') renderNovelList();
         if (pageId === 'novel-info-page' && currentNovelId) loadNovelInfoPage(currentNovelId);
     }
@@ -519,11 +519,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const lineSpacing = localStorage.getItem(LINE_SPACING_KEY) || DEFAULT_LINE_SPACING;
         applyTheme(theme, false);
         applyReaderStyles(font, fontSize, lineSpacing, false);
-        fontSelect.value = font;
-        fontSizeSelect.value = fontSize;
-        lineHeightSlider.value = lineSpacing;
-        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
-        lineHeightValueSpan.textContent = lineSpacing;
+        DOM.fontSelect.value = font;
+        DOM.fontSizeSlider.value = fontSize;
+        DOM.lineHeightSlider.value = lineSpacing;
+        updateThemeToggleButtonAriaLabel();
+        DOM.fontSizeValueSpan.textContent = fontSize;
+        DOM.lineHeightValueSpan.textContent = lineSpacing;
     }
 
     function saveSetting(key, value) {
@@ -532,31 +533,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateThemeToggleButtonAriaLabel() {
-        themeToggleBtn.setAttribute('aria-label', i18n.get(doc.body.classList.contains('dark-mode') ? 'theme_switch_light' : 'theme_switch_dark'));
+        DOM.themeToggleBtn.setAttribute('aria-label', i18n.get(doc.body.classList.contains('dark-mode') ? 'theme_switch_light' : 'theme_switch_dark'));
     }
 
     function applyTheme(theme, save = true) {
         doc.body.classList.toggle('dark-mode', theme === 'dark');
-        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌓';
         updateThemeToggleButtonAriaLabel();
         const metaLight = doc.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]');
         const metaDark = doc.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]');
-        requestAnimationFrame(() => {
-            const lightCol = getComputedStyle(doc.documentElement).getPropertyValue('--bg-primary-light').trim();
-            const darkCol = getComputedStyle(doc.documentElement).getPropertyValue('--bg-primary-dark').trim();
-            const effCol = theme === 'dark' ? darkCol : lightCol;
-            if (metaLight) metaLight.content = effCol;
-            if (metaDark) metaDark.content = effCol;
-        });
+        if (metaLight) metaLight.content = getComputedStyle(doc.documentElement).getPropertyValue(theme === 'dark' ? '--bg-primary-dark' : '--bg-primary-light').trim();
+        if (metaDark) metaDark.content = getComputedStyle(doc.documentElement).getPropertyValue(theme === 'dark' ? '--bg-primary-dark' : '--bg-primary-light').trim();
         if (save) saveSetting(THEME_KEY, theme);
     }
 
     function applyReaderStyles(font, size, lineHeight, save = true) {
         const rootStyle = doc.documentElement.style;
         rootStyle.setProperty('--font-family-reader', font);
-        rootStyle.setProperty('--font-size-reader', size);
+        rootStyle.setProperty('--font-size-reader', `${size}px`);
         rootStyle.setProperty('--line-height-reader', lineHeight);
-        lineHeightValueSpan.textContent = lineHeight;
+        DOM.fontSizeValueSpan.textContent = size;
+        DOM.lineHeightValueSpan.textContent = lineHeight;
         if (save) {
             saveSetting(FONT_KEY, font);
             saveSetting(FONT_SIZE_KEY, size);
@@ -565,12 +561,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateLanguageSelector() {
-        languageSelect.innerHTML = '';
+        DOM.languageSelect.innerHTML = '';
         i18n.getAvailableLanguages().forEach(lang => {
             const opt = doc.createElement('option');
-            opt.value = lang.code; opt.textContent = lang.name; languageSelect.appendChild(opt);
+            opt.value = lang.code; opt.textContent = lang.name; DOM.languageSelect.appendChild(opt);
         });
-        languageSelect.value = i18n.currentLang;
+        DOM.languageSelect.value = i18n.currentLang;
     }
 
     async function loadNovelsMetadata() {
@@ -578,20 +574,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!opfsRoot) { console.warn("OPFS not available, metadata cannot be loaded."); return; }
         try {
             const fileHandle = await opfsRoot.getFileHandle(METADATA_OPFS_FILENAME, { create: false });
-            const file = await fileHandle.getFile();
-            const text = await file.text();
+            const text = await (await fileHandle.getFile()).text();
             if (text) {
                 const parsed = JSON.parse(text);
                 if (Array.isArray(parsed)) {
                     novelsMetadata = parsed.map(n => ({
-                        id: n.id || crypto.randomUUID(), title: n.title || i18n.get('text_untitled_novel'),
-                        author: n.author || '', genre: n.genre || '', description: n.description || '',
+                        id: n.id ?? crypto.randomUUID(), title: n.title ?? i18n.get('text_untitled_novel'),
+                        author: n.author ?? '', genre: n.genre ?? '', description: n.description ?? '',
                         chapters: Array.isArray(n.chapters) ? n.chapters.map((ch, idx) => ({
-                            title: ch.title || i18n.get('text_chapter_placeholder', { index: idx + 1 }),
-                            opfsFileName: ch.opfsFileName || '', lastModified: ch.lastModified || null
+                            title: ch.title ?? i18n.get('text_chapter_placeholder', { index: idx + 1 }),
+                            opfsFileName: ch.opfsFileName ?? '', lastModified: ch.lastModified ?? null
                         })) : [],
-                        lastReadChapterIndex: (typeof n.lastReadChapterIndex === 'number' && n.lastReadChapterIndex >= -1) ? n.lastReadChapterIndex : -1,
-                        lastReadScrollTop: (typeof n.lastReadScrollTop === 'number' && n.lastReadScrollTop >= 0) ? n.lastReadScrollTop : 0
+                        lastReadChapterIndex: n.lastReadChapterIndex ?? -1,
+                        lastReadScrollTop: n.lastReadScrollTop ?? 0
                     }));
                 } else console.warn("Parsed OPFS metadata is not an array.");
             }
@@ -599,13 +594,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error.name === 'NotFoundError') console.log(`OPFS file "${METADATA_OPFS_FILENAME}" not found.`);
             else { console.error(`Error reading "${METADATA_OPFS_FILENAME}" from OPFS:`, error); alert(i18n.get('alert_error_reading_metadata_opfs')); }
         }
-        novelsMetadata.sort((a, b) => (a.title || '').localeCompare(b.title || '', i18n.currentLang, { sensitivity: 'base' }));
+        novelsMetadata.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', i18n.currentLang, { sensitivity: 'base' }));
     }
 
     async function saveNovelsMetadata() {
         if (!opfsRoot) { console.error("OPFS not available, metadata cannot be saved."); alert(i18n.get('alert_error_saving_metadata_opfs')); return; }
         try {
-            novelsMetadata.sort((a, b) => (a.title || '').localeCompare(b.title || '', i18n.currentLang, { sensitivity: 'base' }));
+            novelsMetadata.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', i18n.currentLang, { sensitivity: 'base' }));
             const jsonString = JSON.stringify(novelsMetadata);
             const fileHandle = await opfsRoot.getFileHandle(METADATA_OPFS_FILENAME, { create: true });
             const writable = await fileHandle.createWritable();
@@ -686,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (opfsRoot) {
             try { await getNovelDir(novelId).then(dir => dir.remove({recursive: true})); }
             catch (error) {
-                if (error.name !== 'NotFoundError') alert(i18n.get('alert_error_deleting_opfs_dir', { title: novel.title || i18n.get('text_untitled_novel') }));
+                if (error.name !== 'NotFoundError') alert(i18n.get('alert_error_deleting_opfs_dir', { title: novel.title ?? i18n.get('text_untitled_novel') }));
             }
         }
         const novelIdx = novelsMetadata.findIndex(n => n.id === novelId);
@@ -717,80 +712,79 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settingsCleared) {
             i18n.setLanguage(DEFAULT_LANG); applyTheme(DEFAULT_THEME);
             applyReaderStyles(DEFAULT_FONT, DEFAULT_FONT_SIZE, DEFAULT_LINE_SPACING);
-            fontSelect.value = DEFAULT_FONT;
-            fontSizeSelect.value = DEFAULT_FONT_SIZE;
-            lineHeightSlider.value = DEFAULT_LINE_SPACING;
-            lineHeightValueSpan.textContent = DEFAULT_LINE_SPACING;
+            DOM.fontSelect.value = DEFAULT_FONT;
+            DOM.fontSizeSlider.value = DEFAULT_FONT_SIZE;
+            DOM.lineHeightSlider.value = DEFAULT_LINE_SPACING;
+            DOM.fontSizeValueSpan.textContent = DEFAULT_FONT_SIZE;
+            DOM.lineHeightValueSpan.textContent = DEFAULT_LINE_SPACING;
         }
         renderNovelList(); await showPage('home-page');
         if (settingsCleared && opfsCompletelyCleared) alert(i18n.get('alert_delete_all_success'));
     }
 
     function renderNovelList(filterTerm = '') {
-        novelListEl.innerHTML = '';
+        DOM.novelListEl.innerHTML = '';
         const lowerFilter = filterTerm.toLowerCase().trim();
         const filtered = novelsMetadata.filter(n => !lowerFilter ||
-            (n.title || '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter) ||
-            (n.author || '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter)
+            (n.title ?? '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter) ||
+            (n.author ?? '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter)
         );
         const noNovels = novelsMetadata.length === 0;
-        exportButton.disabled = noNovels;
-        exportButton.setAttribute('aria-disabled', String(noNovels));
+        DOM.exportButton.disabled = noNovels;
+        DOM.exportButton.setAttribute('aria-disabled', String(noNovels));
 
         if (filtered.length === 0) {
             const li = doc.createElement('li'); li.className = 'list-placeholder';
             li.textContent = i18n.get(noNovels ? 'placeholder_no_novels' : 'placeholder_no_matching_novels', { searchTerm: filterTerm });
-            novelListEl.appendChild(li); return;
+            DOM.novelListEl.appendChild(li); return;
         }
         const frag = doc.createDocumentFragment();
         filtered.forEach(novel => {
             const li = doc.createElement('li'); li.className = 'novel-card'; li.dataset.novelId = novel.id;
             li.setAttribute('role', 'button'); li.tabIndex = 0;
-            const title = novel.title || i18n.get('text_untitled_novel');
+            const title = novel.title ?? i18n.get('text_untitled_novel');
             li.setAttribute('aria-label', i18n.get('aria_open_novel', { title }));
-            const titleEl = doc.createElement('h3'); titleEl.className = 'novel-card__title'; titleEl.textContent = title;
-            const authorEl = doc.createElement('p'); authorEl.className = 'novel-card__author';
-            authorEl.textContent = novel.author || i18n.get('text_unknown_author');
-            const contentDiv = doc.createElement('div'); contentDiv.className = 'novel-card__content'; contentDiv.append(titleEl, authorEl);
-            const chev = doc.createElement('div'); chev.className = 'novel-card__chevron'; chev.setAttribute('aria-hidden', 'true'); chev.textContent = '›';
-            li.append(contentDiv, chev);
-            const nav = () => { currentNovelId = novel.id; showPage('novel-info-page'); };
-            li.addEventListener('click', nav);
-            li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nav(); } });
+            li.innerHTML = `
+                <div class="novel-card__content">
+                    <h3 class="novel-card__title">${title}</h3>
+                    <p class="novel-card__author">${novel.author || i18n.get('text_unknown_author')}</p>
+                </div>
+                <svg class="novel-card__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+            `;
             frag.appendChild(li);
         });
-        novelListEl.appendChild(frag);
+        DOM.novelListEl.appendChild(frag);
     }
 
     function loadNovelInfoPage(novelId) {
         const novel = findNovel(novelId);
         if (!novel) { alert(i18n.get('alert_error_finding_novel_info')); showPage('home-page'); return; }
-        novelInfoTitleEl.textContent = novel.title || i18n.get('text_untitled_novel');
-        novelInfoAuthorEl.textContent = novel.author || i18n.get('details_na');
-        novelInfoGenreEl.textContent = novel.genre || i18n.get('details_na');
-        novelInfoDescriptionEl.textContent = novel.description || i18n.get('details_no_description');
+        DOM.novelInfoTitleEl.textContent = novel.title ?? i18n.get('text_untitled_novel');
+        DOM.novelInfoAuthorEl.textContent = novel.author ?? i18n.get('details_na');
+        DOM.novelInfoGenreEl.textContent = novel.genre ?? i18n.get('details_na');
+        DOM.novelInfoDescriptionEl.textContent = novel.description || i18n.get('details_no_description');
         const lastReadIdx = novel.lastReadChapterIndex;
         const lastReadCh = findChapter(novelId, lastReadIdx);
         const hasChaps = novel.chapters?.length > 0;
 
-        novelInfoLastReadEl.onclick = null; novelInfoLastReadEl.onkeydown = null;
-        novelInfoLastReadEl.classList.remove('clickable', 'not-clickable');
-        novelInfoLastReadEl.removeAttribute('role'); novelInfoLastReadEl.tabIndex = -1; novelInfoLastReadEl.removeAttribute('aria-label');
+        DOM.novelInfoLastReadEl.onclick = null; DOM.novelInfoLastReadEl.onkeydown = null;
+        DOM.novelInfoLastReadEl.classList.remove('clickable', 'not-clickable');
+        DOM.novelInfoLastReadEl.removeAttribute('role'); DOM.novelInfoLastReadEl.tabIndex = -1; DOM.novelInfoLastReadEl.removeAttribute('aria-label');
         if (hasChaps && lastReadCh && lastReadIdx !== -1) {
-            const chTitle = lastReadCh.title || i18n.get('text_chapter_placeholder', { index: lastReadIdx + 1 });
-            novelInfoLastReadEl.textContent = chTitle; novelInfoLastReadEl.classList.add('clickable');
-            novelInfoLastReadEl.setAttribute('role', 'link'); novelInfoLastReadEl.tabIndex = 0;
-            novelInfoLastReadEl.setAttribute('aria-label', i18n.get('aria_continue_reading', { chapterTitle: chTitle }));
+            const chTitle = lastReadCh.title ?? i18n.get('text_chapter_placeholder', { index: lastReadIdx + 1 });
+            DOM.novelInfoLastReadEl.textContent = chTitle; DOM.novelInfoLastReadEl.classList.add('clickable');
+            DOM.novelInfoLastReadEl.setAttribute('role', 'link'); DOM.novelInfoLastReadEl.tabIndex = 0;
+            DOM.novelInfoLastReadEl.setAttribute('aria-label', i18n.get('aria_continue_reading', { chapterTitle: chTitle }));
             const handler = (e) => {
                 if (e.type==='click'||(e.type==='keydown'&&(e.key==='Enter'||e.key===' '))) {
                     e.preventDefault(); currentChapterIndex = lastReadIdx;
                     loadReaderPage(currentNovelId, currentChapterIndex).then(() => showPage('reader-page'));
                 }
             };
-            novelInfoLastReadEl.addEventListener('click', handler); novelInfoLastReadEl.addEventListener('keydown', handler);
-        } else { novelInfoLastReadEl.textContent = i18n.get('details_never_read'); novelInfoLastReadEl.classList.add('not-clickable'); }
+            DOM.novelInfoLastReadEl.addEventListener('click', handler); DOM.novelInfoLastReadEl.addEventListener('keydown', handler);
+        } else { DOM.novelInfoLastReadEl.textContent = i18n.get('details_never_read'); DOM.novelInfoLastReadEl.classList.add('not-clickable'); }
 
-        renderChapterList(novelId, chapterSearchInput ? chapterSearchInput.value : '');
+        renderChapterList(novelId, DOM.chapterSearchInput ? DOM.chapterSearchInput.value : '');
     }
 
     function formatTimestamp(isoString) {
@@ -803,86 +797,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderChapterList(novelId, filterTerm = '') {
-        const novel = findNovel(novelId); chapterListEl.innerHTML = '';
+        const novel = findNovel(novelId); DOM.chapterListEl.innerHTML = '';
         const chapters = novel?.chapters || [];
         const lowerFilter = filterTerm.toLowerCase().trim();
         const filtered = chapters.map((ch, idx) => ({ ...ch, originalIndex: idx }))
-            .filter(ch => !lowerFilter || (ch.title || '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter));
+            .filter(ch => !lowerFilter || (ch.title ?? '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter));
         const hasAnyChaps = chapters.length > 0;
-        bulkDownloadBtn.disabled = !hasAnyChaps;
-        bulkDownloadBtn.setAttribute('aria-disabled', String(!hasAnyChaps));
+        DOM.bulkDownloadBtn.disabled = !hasAnyChaps;
+        DOM.bulkDownloadBtn.setAttribute('aria-disabled', String(!hasAnyChaps));
 
         if (filtered.length === 0) {
             const li = doc.createElement('li'); li.className = 'list-placeholder';
             li.textContent = i18n.get(hasAnyChaps ? 'placeholder_no_matching_chapters' : 'placeholder_no_chapters', { searchTerm: filterTerm });
-            chapterListEl.appendChild(li); return;
+            DOM.chapterListEl.appendChild(li); return;
         }
         const frag = doc.createDocumentFragment();
         filtered.forEach(({ title, lastModified, originalIndex }) => {
             const li = doc.createElement('li'); li.className = 'chapter-card'; li.dataset.chapterIndex = originalIndex;
-            const chTitle = title || i18n.get('text_chapter_placeholder', { index: originalIndex + 1 });
-            const mainDiv = doc.createElement('div'); mainDiv.className = 'chapter-card__main'; mainDiv.setAttribute('role','button'); mainDiv.tabIndex=0;
-            mainDiv.setAttribute('aria-label', i18n.get('aria_read_chapter', { chapterTitle: chTitle }));
-            const titleH4 = doc.createElement('h4'); titleH4.className = 'chapter-card__title'; titleH4.textContent = chTitle;
-            const metaP = doc.createElement('p'); metaP.className = 'chapter-card__meta'; metaP.textContent = i18n.get('text_modified', { timestamp: formatTimestamp(lastModified) });
-            mainDiv.append(titleH4, metaP);
-            const actionsDiv = doc.createElement('div'); actionsDiv.className = 'chapter-card__actions';
-            const createBtn = (icon, ariaKey, ...cls) => {
-                const btn = doc.createElement('button'); btn.type = 'button'; btn.textContent = icon;
-                btn.setAttribute('aria-label', i18n.get(ariaKey, { chapterTitle: chTitle }));
-                btn.classList.add('btn', 'btn--icon', ...cls); return btn;
-            };
-            const editBtn = createBtn('✏️', 'aria_edit_chapter'); const dlBtn = createBtn('💾', 'aria_download_chapter');
-            const delBtn = createBtn('🗑️', 'aria_delete_chapter', 'btn--icon-danger');
-            actionsDiv.append(editBtn, dlBtn, delBtn); li.append(mainDiv, actionsDiv);
-            const navReader = () => { currentChapterIndex = originalIndex; loadReaderPage(currentNovelId, currentChapterIndex).then(() => showPage('reader-page')); };
-            mainDiv.addEventListener('click', navReader); mainDiv.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); navReader();}});
-            editBtn.addEventListener('click', (e) => { e.stopPropagation(); openChapterModal(novelId, originalIndex); });
-            dlBtn.addEventListener('click', (e) => { e.stopPropagation(); downloadChapter(novelId, originalIndex).catch(console.warn); });
-            delBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                if (confirm(i18n.get('confirm_delete_chapter', { chapterTitle: chTitle }))) {
-                    try {
-                        if (await deleteChapterFile(novelId, originalIndex)) {
-                            novel.chapters.splice(originalIndex, 1);
-                            if (novel.lastReadChapterIndex === originalIndex) { novel.lastReadChapterIndex = -1; novel.lastReadScrollTop = 0; }
-                            else if (novel.lastReadChapterIndex > originalIndex) novel.lastReadChapterIndex--;
-                            await saveNovelsMetadata();
-                            renderChapterList(novelId, filterTerm); loadNovelInfoPage(novelId);
-                        } else alert(i18n.get('alert_failed_delete_chapter_file', { chapterTitle: chTitle }));
-                    } catch(err) { alert(i18n.get('alert_error_deleting_chapter', { chapterTitle: chTitle })); }
-                }
-            });
+            const chTitle = title ?? i18n.get('text_chapter_placeholder', { index: originalIndex + 1 });
+            li.innerHTML = `
+                <div class="chapter-card__main" role="button" tabindex="0" data-action="read" aria-label="${i18n.get('aria_read_chapter', { chapterTitle: chTitle })}">
+                    <h4 class="chapter-card__title">${chTitle}</h4>
+                    <p class="chapter-card__meta">${i18n.get('text_modified', { timestamp: formatTimestamp(lastModified) })}</p>
+                </div>
+                <div class="chapter-card__actions">
+                    <button type="button" class="btn btn--icon" data-action="edit" aria-label="${i18n.get('aria_edit_chapter', { chapterTitle: chTitle })}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg></button>
+                    <button type="button" class="btn btn--icon" data-action="download" aria-label="${i18n.get('aria_download_chapter', { chapterTitle: chTitle })}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></button>
+                    <button type="button" class="btn btn--icon btn--icon-danger" data-action="delete" aria-label="${i18n.get('aria_delete_chapter', { chapterTitle: chTitle })}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+                </div>
+            `;
             frag.appendChild(li);
         });
-        chapterListEl.appendChild(frag);
+        DOM.chapterListEl.appendChild(frag);
     }
 
     async function loadReaderPage(novelId, chapterIndexToLoad) {
         const novel = findNovel(novelId); const chapter = findChapter(novelId, chapterIndexToLoad);
         if (!chapter || !novel) {
-            readerChapterTitleEl.textContent = i18n.get('text_error_formatting_timestamp');
-            readerContentEl.textContent = i18n.get('text_error_loading_chapter');
-            prevChapterBtn.disabled = true; prevChapterBtn.setAttribute('aria-disabled', 'true');
-            nextChapterBtn.disabled = true; nextChapterBtn.setAttribute('aria-disabled', 'true');
+            DOM.readerChapterTitleEl.textContent = i18n.get('text_error_formatting_timestamp');
+            DOM.readerContentEl.textContent = i18n.get('text_error_loading_chapter');
+            DOM.prevChapterBtn.disabled = true; DOM.prevChapterBtn.setAttribute('aria-disabled', 'true');
+            DOM.nextChapterBtn.disabled = true; DOM.nextChapterBtn.setAttribute('aria-disabled', 'true');
             return;
         }
         currentChapterIndex = chapterIndexToLoad;
-        readerChapterTitleEl.textContent = chapter.title || i18n.get('text_chapter_placeholder', { index: currentChapterIndex + 1 });
-        readerContentEl.textContent = i18n.get('text_loading_chapter_content'); readerContentEl.style.color = '';
-        readerMainContent.scrollTop = 0;
+        DOM.readerChapterTitleEl.textContent = chapter.title ?? i18n.get('text_chapter_placeholder', { index: currentChapterIndex + 1 });
+        DOM.readerContentEl.textContent = i18n.get('text_loading_chapter_content'); DOM.readerContentEl.style.color = '';
+        DOM.readerMainContent.scrollTop = 0;
         const rawContent = await readChapterContent(novelId, currentChapterIndex);
         if (rawContent.startsWith(i18n.get('text_error_prefix'))) {
-            readerContentEl.textContent = rawContent; readerContentEl.style.color = 'var(--color-accent-danger)';
-        } else readerContentEl.textContent = rawContent;
-        prevChapterBtn.disabled = (currentChapterIndex <= 0);
-        prevChapterBtn.setAttribute('aria-disabled', String(prevChapterBtn.disabled));
-        nextChapterBtn.disabled = (currentChapterIndex >= novel.chapters.length - 1);
-        nextChapterBtn.setAttribute('aria-disabled', String(nextChapterBtn.disabled));
+            DOM.readerContentEl.textContent = rawContent; DOM.readerContentEl.style.color = 'var(--color-accent-danger)';
+        } else DOM.readerContentEl.textContent = rawContent;
+        DOM.prevChapterBtn.disabled = (currentChapterIndex <= 0);
+        DOM.prevChapterBtn.setAttribute('aria-disabled', String(DOM.prevChapterBtn.disabled));
+        DOM.nextChapterBtn.disabled = (currentChapterIndex >= novel.chapters.length - 1);
+        DOM.nextChapterBtn.setAttribute('aria-disabled', String(DOM.nextChapterBtn.disabled));
         requestAnimationFrame(() => {
-            if (readerPage.classList.contains('active') && currentNovelId === novelId &&
+            if (DOM.readerPage.classList.contains('active') && currentNovelId === novelId &&
                 currentChapterIndex === novel.lastReadChapterIndex) {
-                readerMainContent.scrollTop = novel.lastReadScrollTop;
+                DOM.readerMainContent.scrollTop = novel.lastReadScrollTop;
             }
         });
     }
@@ -902,20 +875,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function openNovelModal(novelIdToEdit = null) {
         const isEditing = !!novelIdToEdit; const novel = isEditing ? findNovel(novelIdToEdit) : null;
         if (isEditing && !novel) { alert(i18n.get('alert_error_finding_novel_info')); return; }
-        novelModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_novel_title' : 'modal_add_novel_title');
-        novelModalIdInput.value = novelIdToEdit || '';
-        novelModalTitleInput.value = novel?.title || '';
-        novelModalAuthorInput.value = novel?.author || '';
-        novelModalGenreInput.value = novel?.genre || '';
-        novelModalDescriptionInput.value = novel?.description || '';
-        openModal(novelModal); novelModalTitleInput.focus();
+        DOM.novelModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_novel_title' : 'modal_add_novel_title');
+        DOM.novelModalIdInput.value = novelIdToEdit || '';
+        DOM.novelModalTitleInput.value = novel?.title ?? '';
+        DOM.novelModalAuthorInput.value = novel?.author ?? '';
+        DOM.novelModalGenreInput.value = novel?.genre ?? '';
+        DOM.novelModalDescriptionInput.value = novel?.description ?? '';
+        openModal(DOM.novelModal); DOM.novelModalTitleInput.focus();
     }
-    function closeNovelModal() { closeModal(novelModal); }
+    function closeNovelModal() { closeModal(DOM.novelModal); }
     async function saveNovelFromModal() {
-        const id = novelModalIdInput.value; const title = novelModalTitleInput.value.trim();
-        if (!title) { alert(i18n.get('alert_novel_title_required')); novelModalTitleInput.focus(); return; }
-        const author = novelModalAuthorInput.value.trim(); const genre = novelModalGenreInput.value.trim();
-        const description = novelModalDescriptionInput.value.trim(); const isEditing = !!id;
+        const id = DOM.novelModalIdInput.value; const title = DOM.novelModalTitleInput.value.trim();
+        if (!title) { alert(i18n.get('alert_novel_title_required')); DOM.novelModalTitleInput.focus(); return; }
+        const author = DOM.novelModalAuthorInput.value.trim(); const genre = DOM.novelModalGenreInput.value.trim();
+        const description = DOM.novelModalDescriptionInput.value.trim(); const isEditing = !!id;
         let novelToUpdate;
         if (isEditing) {
             novelToUpdate = findNovel(id);
@@ -926,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
             novelsMetadata.push(novelToUpdate); currentNovelId = novelToUpdate.id;
         }
         await saveNovelsMetadata(); closeNovelModal();
-        renderNovelList(novelSearchInput ? novelSearchInput.value : '');
+        renderNovelList(DOM.novelSearchInput ? DOM.novelSearchInput.value : '');
         if (doc.getElementById('novel-info-page').classList.contains('active') && currentNovelId === novelToUpdate.id) {
             loadNovelInfoPage(novelToUpdate.id);
         } else if (!isEditing && currentNovelId === novelToUpdate.id) await showPage('novel-info-page');
@@ -937,30 +910,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const isEditing = chapterIndexToEdit !== null && chapterIndexToEdit >= 0;
         const chapter = isEditing ? findChapter(novelId, chapterIndexToEdit) : null;
         if (isEditing && !chapter) { alert(i18n.get('alert_error_finding_chapter_to_edit')); return; }
-        chapterModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_chapter_title' : 'modal_add_chapter_title');
-        chapterModalNovelIdInput.value = novelId;
-        chapterModalIndexInput.value = isEditing ? String(chapterIndexToEdit) : '';
-        chapterModalTitleInput.value = chapter?.title || '';
-        chapterModalContentInput.value = ''; chapterModalContentInput.disabled = true;
-        openModal(chapterModal); chapterModalTitleInput.focus();
+        DOM.chapterModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_chapter_title' : 'modal_add_chapter_title');
+        DOM.chapterModalNovelIdInput.value = novelId;
+        DOM.chapterModalIndexInput.value = isEditing ? String(chapterIndexToEdit) : '';
+        DOM.chapterModalTitleInput.value = chapter?.title ?? '';
+        DOM.chapterModalContentInput.value = ''; DOM.chapterModalContentInput.disabled = true;
+        openModal(DOM.chapterModal); DOM.chapterModalTitleInput.focus();
         if (isEditing) {
-            chapterModalContentInput.value = i18n.get('text_loading_chapter_modal_content');
+            DOM.chapterModalContentInput.value = i18n.get('text_loading_chapter_modal_content');
             try {
                 const rawContent = await readChapterContent(novelId, chapterIndexToEdit);
-                if (rawContent.startsWith(i18n.get('text_error_prefix'))) chapterModalContentInput.value = i18n.get('text_error_loading_chapter_modal_content', { errorDetails: rawContent.substring(i18n.get('text_error_prefix').length + 1) });
-                else chapterModalContentInput.value = rawContent;
-            } catch(e) { chapterModalContentInput.value = i18n.get('text_critical_error_loading_chapter_modal_content', { errorMessage: e.message }); }
-            finally { chapterModalContentInput.disabled = false; }
+                if (rawContent.startsWith(i18n.get('text_error_prefix'))) DOM.chapterModalContentInput.value = i18n.get('text_error_loading_chapter_modal_content', { errorDetails: rawContent.substring(i18n.get('text_error_prefix').length + 1) });
+                else DOM.chapterModalContentInput.value = rawContent;
+            } catch(e) { DOM.chapterModalContentInput.value = i18n.get('text_critical_error_loading_chapter_modal_content', { errorMessage: e.message }); }
+            finally { DOM.chapterModalContentInput.disabled = false; }
         } else {
-            chapterModalContentInput.disabled = false;
+            DOM.chapterModalContentInput.disabled = false;
         }
     }
-    function closeChapterModal() { closeModal(chapterModal); }
+    function closeChapterModal() { closeModal(DOM.chapterModal); }
     async function saveChapterFromModal() {
-        const novelId = chapterModalNovelIdInput.value; const indexStr = chapterModalIndexInput.value;
-        const title = chapterModalTitleInput.value.trim(); const content = chapterModalContentInput.value;
+        const novelId = DOM.chapterModalNovelIdInput.value; const indexStr = DOM.chapterModalIndexInput.value;
+        const title = DOM.chapterModalTitleInput.value.trim(); const content = DOM.chapterModalContentInput.value;
         const novel = findNovel(novelId);
-        if (!title) { alert(i18n.get('alert_chapter_title_required')); chapterModalTitleInput.focus(); return; }
+        if (!title) { alert(i18n.get('alert_chapter_title_required')); DOM.chapterModalTitleInput.focus(); return; }
         if (!novel) { alert(i18n.get('alert_error_chapter_save_novel_missing')); closeChapterModal(); return; }
         const isNewCh = indexStr === '';
         const chIdx = isNewCh ? novel.chapters.length : parseInt(indexStr, 10);
@@ -976,7 +949,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await saveChapterContent(novelId, chIdx, content);
             await saveNovelsMetadata();
             closeChapterModal();
-            renderChapterList(novelId, chapterSearchInput ? chapterSearchInput.value : '');
+            renderChapterList(novelId, DOM.chapterSearchInput ? DOM.chapterSearchInput.value : '');
         } catch (error) {
             alert(i18n.get('alert_chapter_save_failed', { errorMessage: error.message }));
             if (isNewCh) { const tempIdx = novel.chapters.indexOf(chData); if (tempIdx > -1) novel.chapters.splice(tempIdx, 1); }
@@ -984,19 +957,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openReaderSettingsModal() {
-        fontSelect.value = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
-        fontSizeSelect.value = localStorage.getItem(FONT_SIZE_KEY) || DEFAULT_FONT_SIZE;
-        lineHeightSlider.value = localStorage.getItem(LINE_SPACING_KEY) || DEFAULT_LINE_SPACING;
-        lineHeightValueSpan.textContent = lineHeightSlider.value;
-        openModal(readerSettingsModal);
+        DOM.fontSelect.value = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
+        DOM.fontSizeSlider.value = localStorage.getItem(FONT_SIZE_KEY) || DEFAULT_FONT_SIZE;
+        DOM.lineHeightSlider.value = localStorage.getItem(LINE_SPACING_KEY) || DEFAULT_LINE_SPACING;
+        DOM.fontSizeValueSpan.textContent = DOM.fontSizeSlider.value;
+        DOM.lineHeightValueSpan.textContent = DOM.lineHeightSlider.value;
+        openModal(DOM.readerSettingsModal);
     }
-    function closeReaderSettingsModal() { closeModal(readerSettingsModal); }
+    function closeReaderSettingsModal() { closeModal(DOM.readerSettingsModal); }
 
     async function exportAllData() {
         if (!novelsMetadata?.length) { alert(i18n.get('alert_no_novels_to_export')); return; }
         if (!opfsRoot || typeof CompressionStream === 'undefined') { alert(i18n.get('alert_export_failed_apis')); return; }
-        const origAria = exportButton.getAttribute('aria-label');
-        exportButton.disabled = true; exportButton.setAttribute('aria-label', i18n.get('aria_exporting_novels'));
+        const origAria = DOM.exportButton.getAttribute('aria-label');
+        DOM.exportButton.disabled = true; DOM.exportButton.setAttribute('aria-label', i18n.get('aria_exporting_novels'));
         try {
             const exportMeta = JSON.parse(JSON.stringify(novelsMetadata));
             const exportObj = { version: 2, metadata: exportMeta, chapters: {} };
@@ -1022,23 +996,23 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(i18n.get('alert_export_complete'));
         } catch (error) { alert(i18n.get('alert_export_failed', { errorMessage: error.message }));
         } finally {
-            exportButton.disabled = novelsMetadata.length === 0;
-            exportButton.setAttribute('aria-label', origAria || i18n.get('aria_export_all'));
+            DOM.exportButton.disabled = novelsMetadata.length === 0;
+            DOM.exportButton.setAttribute('aria-label', origAria || i18n.get('aria_export_all'));
         }
     }
 
     function triggerImport() {
         if (!opfsRoot || typeof DecompressionStream === 'undefined') { alert(i18n.get('alert_import_failed_apis')); return; }
         if (novelsMetadata.length > 0 && !confirm(i18n.get('alert_confirm_import_overwrite'))) return;
-        importFileInput.click();
+        DOM.importFileInput.click();
     }
 
     async function importData(file) {
-        if (!file || !file.name.endsWith('.novelarchive.gz')) { alert(i18n.get('alert_invalid_import_file')); importFileInput.value = ''; return; }
-        if (!opfsRoot) { alert(i18n.get('alert_import_failed_storage_not_ready')); importFileInput.value = ''; return; }
-        const origAria = importButton.getAttribute('aria-label');
-        importButton.disabled = true; importFileInput.disabled = true;
-        importButton.setAttribute('aria-label', i18n.get('aria_importing_backup'));
+        if (!file || !file.name.endsWith('.novelarchive.gz')) { alert(i18n.get('alert_invalid_import_file')); DOM.importFileInput.value = ''; return; }
+        if (!opfsRoot) { alert(i18n.get('alert_import_failed_storage_not_ready')); DOM.importFileInput.value = ''; return; }
+        const origAria = DOM.importButton.getAttribute('aria-label');
+        DOM.importButton.disabled = true; DOM.importFileInput.disabled = true;
+        DOM.importButton.setAttribute('aria-label', i18n.get('aria_importing_backup'));
         let prevSettingsBackup = null;
         try {
             prevSettingsBackup = { theme:localStorage.getItem(THEME_KEY), font:localStorage.getItem(FONT_KEY), fontSize:localStorage.getItem(FONT_SIZE_KEY), lineSpacing:localStorage.getItem(LINE_SPACING_KEY), language:localStorage.getItem(LANG_KEY) };
@@ -1053,8 +1027,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (importObj.version !== 2 && importObj.version !== 1) console.warn(i18n.get('warning_importing_incompatible_version', { version: importObj.version }));
             let importedNovelsCount = 0; let chapterSaveErrors = 0; const nowISO = new Date().toISOString();
             novelsMetadata = importObj.metadata.map(n => ({
-                id: n.id||crypto.randomUUID(), title:n.title||i18n.get('text_untitled_novel'), author:n.author||'', genre:n.genre||'', description:n.description||'',
-                chapters:(n.chapters||[]).map((ch,idx)=>({title:ch.title||i18n.get('text_chapter_placeholder',{index:idx+1}), opfsFileName:ch.opfsFileName||'', lastModified:ch.lastModified||nowISO})),
+                id: n.id??crypto.randomUUID(), title:n.title??i18n.get('text_untitled_novel'), author:n.author??'', genre:n.genre??'', description:n.description??'',
+                chapters:(n.chapters||[]).map((ch,idx)=>({title:ch.title??i18n.get('text_chapter_placeholder',{index:idx+1}), opfsFileName:ch.opfsFileName??'', lastModified:ch.lastModified??nowISO})),
                 lastReadChapterIndex:n.lastReadChapterIndex??-1, lastReadScrollTop:n.lastReadScrollTop??0
             }));
             await saveNovelsMetadata();
@@ -1092,9 +1066,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (rbErr) { alert(i18n.get('alert_rollback_failed')); }
             } else alert(i18n.get('alert_rollback_failed_no_backup'));
         } finally {
-            importButton.disabled = false;
-            importFileInput.disabled = false; importFileInput.value = '';
-            importButton.setAttribute('aria-label', origAria || i18n.get('aria_import_archive'));
+            DOM.importButton.disabled = false;
+            DOM.importFileInput.disabled = false; DOM.importFileInput.value = '';
+            DOM.importButton.setAttribute('aria-label', origAria || i18n.get('aria_import_archive'));
         }
     }
 
@@ -1110,8 +1084,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const opfsFile = ch.opfsFileName || `ch_${String(chIdx).padStart(5, '0')}.txt`;
         if (!opfsFile) { alert(i18n.get('alert_download_failed_missing_metadata')); throw new Error("Ch file info missing"); }
         const safeOpfsFile = sanitizeFilename(opfsFile);
-        const chTitle = ch.title || i18n.get('text_chapter_placeholder', { index: chIdx + 1 });
-        const novelTitle = novel.title || i18n.get('text_untitled_novel');
+        const chTitle = ch.title ?? i18n.get('text_chapter_placeholder', { index: chIdx + 1 });
+        const novelTitle = novel.title ?? i18n.get('text_untitled_novel');
         const dlName = `${sanitizeFilename(novelTitle)} - Ch ${String(chIdx+1).padStart(3,'0')} - ${sanitizeFilename(chTitle)}.txt`;
         if (!opfsRoot) { alert(i18n.get('alert_download_failed_storage_unavailable')); throw new Error("OPFS unavailable"); }
         try {
@@ -1121,7 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
              const url = URL.createObjectURL(file); const a = doc.createElement('a'); a.href=url; a.download=dlName;
              doc.body.appendChild(a); a.click(); doc.body.removeChild(a); URL.revokeObjectURL(url);
         } catch (error) {
-             const titleAlert = ch.title || i18n.get('text_chapter_placeholder', { index: chIdx + 1 });
+             const titleAlert = ch.title ?? i18n.get('text_chapter_placeholder', { index: chIdx + 1 });
              const errKey = error.name === 'NotFoundError' ? 'alert_download_failed_file_not_found' : 'alert_download_failed_general';
              alert(i18n.get(errKey, { title: titleAlert, fileName: safeOpfsFile, errorMessage: error.message })); throw error;
         }
@@ -1131,18 +1105,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const novel = findNovel(novelId);
         if (!novel?.chapters?.length) { alert(i18n.get('alert_no_chapters_to_download')); return; }
         if (!opfsRoot) { alert(i18n.get('alert_download_failed_storage_unavailable')); return; }
-        const totalChaps = novel.chapters.length; const novelTitle = novel.title || i18n.get('text_untitled_novel');
-        const origBtnText = bulkDownloadBtn.textContent;
-        bulkDownloadBtn.disabled = true; bulkDownloadBtn.setAttribute('aria-disabled', 'true');
-        bulkDownloadBtn.setAttribute('aria-live', 'polite'); bulkDownloadBtn.textContent = i18n.get('bulk_download_preparing');
+        const totalChaps = novel.chapters.length; const novelTitle = novel.title ?? i18n.get('text_untitled_novel');
+        const origBtnText = DOM.bulkDownloadBtn.querySelector('span').textContent;
+        DOM.bulkDownloadBtn.disabled = true; DOM.bulkDownloadBtn.setAttribute('aria-disabled', 'true');
+        DOM.bulkDownloadBtn.setAttribute('aria-live', 'polite'); DOM.bulkDownloadBtn.querySelector('span').textContent = i18n.get('bulk_download_preparing');
         let combined = `${i18n.get('form_title')}: ${novelTitle}\n`;
         if (novel.author) combined += `${i18n.get('form_author')}: ${novel.author}\n`;
         combined += `${i18n.get('details_chapters')}: ${totalChaps}\n========================================\n\n`;
         let succCount = 0, errCount = 0;
         for (let i = 0; i < totalChaps; i++) {
-            bulkDownloadBtn.textContent = i18n.get('bulk_download_reading', { current: i + 1, total: totalChaps });
+            DOM.bulkDownloadBtn.querySelector('span').textContent = i18n.get('bulk_download_reading', { current: i + 1, total: totalChaps });
             const ch = novel.chapters[i];
-            const chTitle = ch.title || i18n.get('text_chapter_placeholder', { index: i + 1 });
+            const chTitle = ch.title ?? i18n.get('text_chapter_placeholder', { index: i + 1 });
             combined += `## ${chTitle} (${i18n.get('text_chapter_placeholder', { index: i + 1 })})\n\n`;
             try {
                 const content = await readChapterContent(novelId, i);
@@ -1151,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) { combined += `### ${i18n.get('text_error_prefix')} ${i18n.get('text_error_reading_file',{errorMessage: e.message})} ###\n\n`; errCount++; }
             combined += "---\n\n";
         }
-        bulkDownloadBtn.textContent = i18n.get('bulk_download_saving');
+        DOM.bulkDownloadBtn.querySelector('span').textContent = i18n.get('bulk_download_saving');
         try {
             const blob = new Blob([combined],{type:'text/plain;charset=utf-8'}); const url = URL.createObjectURL(blob);
             const a = doc.createElement('a'); a.href = url; a.download = `${sanitizeFilename(novelTitle)} - All Chapters.txt`;
@@ -1160,8 +1134,8 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(i18n.get(finalMsgKey, {title:novelTitle, successCount:succCount, errorCount:errCount}));
         } catch (saveErr) { alert(i18n.get('bulk_download_save_failed', { errorMessage: saveErr.message }));
         } finally {
-            bulkDownloadBtn.textContent = origBtnText; bulkDownloadBtn.disabled = !novel?.chapters?.length;
-            bulkDownloadBtn.setAttribute('aria-disabled', String(!novel?.chapters?.length)); bulkDownloadBtn.removeAttribute('aria-live');
+            DOM.bulkDownloadBtn.querySelector('span').textContent = origBtnText; DOM.bulkDownloadBtn.disabled = !novel?.chapters?.length;
+            DOM.bulkDownloadBtn.setAttribute('aria-disabled', String(!novel?.chapters?.length)); DOM.bulkDownloadBtn.removeAttribute('aria-live');
         }
     }
 
@@ -1171,30 +1145,26 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (doc.exitFullscreen) doc.exitFullscreen();
     }
     function updateFullscreenButtonAriaLabel() {
-         readerFullscreenBtn.setAttribute('aria-label', i18n.get(doc.fullscreenElement ? 'aria_exit_fullscreen' : 'aria_enter_fullscreen'));
-    }
-    function updateFullscreenButtonVisual() {
-        readerFullscreenBtn.textContent = doc.fullscreenElement ? '↙️' : '⛶';
-        updateFullscreenButtonAriaLabel();
+         DOM.readerFullscreenBtn.setAttribute('aria-label', i18n.get(doc.fullscreenElement ? 'aria_exit_fullscreen' : 'aria_enter_fullscreen'));
     }
 
     function setupEventListeners() {
         doc.querySelectorAll('.back-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.target || 'home-page')));
         doc.getElementById('settings-btn')?.addEventListener('click', () => showPage('settings-page'));
-        themeToggleBtn?.addEventListener('click', () => applyTheme(doc.body.classList.contains('dark-mode') ? 'light' : 'dark'));
-        languageSelect?.addEventListener('change', (e) => i18n.setLanguage(e.target.value));
+        DOM.themeToggleBtn?.addEventListener('click', () => applyTheme(doc.body.classList.contains('dark-mode') ? 'light' : 'dark'));
+        DOM.languageSelect?.addEventListener('change', (e) => i18n.setLanguage(e.target.value));
         doc.getElementById('add-novel-btn')?.addEventListener('click', () => openNovelModal());
-        importButton?.addEventListener('click', triggerImport);
-        importFileInput?.addEventListener('change', (e) => { if (e.target.files?.length) importData(e.target.files[0]); });
-        exportButton?.addEventListener('click', exportAllData);
+        DOM.importButton?.addEventListener('click', triggerImport);
+        DOM.importFileInput?.addEventListener('change', (e) => { if (e.target.files?.length) importData(e.target.files[0]); });
+        DOM.exportButton?.addEventListener('click', exportAllData);
         const debouncedRenderNovels = debounce(renderNovelList, SEARCH_DEBOUNCE_DELAY);
-        novelSearchInput?.addEventListener('input', (e) => debouncedRenderNovels(e.target.value));
-        deleteAllDataBtn?.addEventListener('click', deleteAllData);
+        DOM.novelSearchInput?.addEventListener('input', (e) => debouncedRenderNovels(e.target.value));
+        DOM.deleteAllDataBtn?.addEventListener('click', deleteAllData);
         doc.getElementById('edit-novel-btn')?.addEventListener('click', () => { if (currentNovelId) openNovelModal(currentNovelId); });
         doc.getElementById('delete-novel-btn')?.addEventListener('click', async () => {
             if (!currentNovelId) return; const novel = findNovel(currentNovelId);
-            const title = novel?.title || i18n.get('text_untitled_novel');
-            if (novel && confirm(i18n.get('alert_confirm_delete_novel_body', { title }))) {
+            const title = novel?.title ?? i18n.get('text_untitled_novel');
+            if (novel && confirm(`${i18n.get('alert_confirm_delete_novel_title')}\n\n${i18n.get('alert_confirm_delete_novel_body', { title })}`)) {
                  try {
                     await deleteNovelData(currentNovelId); currentNovelId = null;
                     renderNovelList(); await showPage('home-page');
@@ -1203,42 +1173,101 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         doc.getElementById('add-chapter-btn')?.addEventListener('click', () => { if (currentNovelId) openChapterModal(currentNovelId); });
-        bulkDownloadBtn?.addEventListener('click', () => { if (currentNovelId) downloadAllChaptersCombined(currentNovelId); });
+        DOM.bulkDownloadBtn?.addEventListener('click', () => { if (currentNovelId) downloadAllChaptersCombined(currentNovelId); });
         const debouncedRenderChapters = debounce((id, filter) => { if (currentNovelId === id) renderChapterList(id, filter); }, SEARCH_DEBOUNCE_DELAY);
-        chapterSearchInput?.addEventListener('input', (e) => { if (currentNovelId) debouncedRenderChapters(currentNovelId, e.target.value); });
+        DOM.chapterSearchInput?.addEventListener('input', (e) => { if (currentNovelId) debouncedRenderChapters(currentNovelId, e.target.value); });
         doc.getElementById('save-novel-modal-btn')?.addEventListener('click', saveNovelFromModal);
         doc.getElementById('cancel-novel-modal-btn')?.addEventListener('click', closeNovelModal);
-        novelModal?.addEventListener('click', (e) => { if (e.target === novelModal) closeNovelModal(); });
+        DOM.novelModal?.addEventListener('click', (e) => { if (e.target === DOM.novelModal) closeNovelModal(); });
         doc.getElementById('save-chapter-modal-btn')?.addEventListener('click', saveChapterFromModal);
         doc.getElementById('cancel-chapter-modal-btn')?.addEventListener('click', closeChapterModal);
-        chapterModal?.addEventListener('click', (e) => { if (e.target === chapterModal) closeChapterModal(); });
-        chapterModalTitleInput?.addEventListener('keydown', (e) => { if (e.key==='Enter'&&!e.shiftKey&&chapterModalContentInput) { e.preventDefault(); chapterModalContentInput.focus();}});
+        DOM.chapterModal?.addEventListener('click', (e) => { if (e.target === DOM.chapterModal) closeChapterModal(); });
+        DOM.chapterModalTitleInput?.addEventListener('keydown', (e) => { if (e.key==='Enter'&&!e.shiftKey&&DOM.chapterModalContentInput) { e.preventDefault(); DOM.chapterModalContentInput.focus();}});
         doc.getElementById('close-reader-settings-modal-btn')?.addEventListener('click', closeReaderSettingsModal);
-        readerSettingsModal?.addEventListener('click', (e) => { if (e.target === readerSettingsModal) closeReaderSettingsModal(); });
+        DOM.readerSettingsModal?.addEventListener('click', (e) => { if (e.target === DOM.readerSettingsModal) closeReaderSettingsModal(); });
         doc.getElementById('reader-settings-btn')?.addEventListener('click', openReaderSettingsModal);
-        readerFullscreenBtn?.addEventListener('click', toggleFullScreen);
-        doc.addEventListener('fullscreenchange', updateFullscreenButtonVisual);
-        prevChapterBtn?.addEventListener('click', async () => {
+        DOM.readerFullscreenBtn?.addEventListener('click', toggleFullScreen);
+        doc.addEventListener('fullscreenchange', updateFullscreenButtonAriaLabel);
+        DOM.prevChapterBtn?.addEventListener('click', async () => {
             await saveReaderPosition();
             if (currentNovelId && currentChapterIndex > 0) await loadReaderPage(currentNovelId, currentChapterIndex - 1);
         });
-        nextChapterBtn?.addEventListener('click', async () => {
+        DOM.nextChapterBtn?.addEventListener('click', async () => {
             await saveReaderPosition(); const novel = findNovel(currentNovelId);
             if (novel && currentChapterIndex < novel.chapters.length - 1) await loadReaderPage(currentNovelId, currentChapterIndex + 1);
         });
-        fontSelect?.addEventListener('change', (e) => applyReaderStyles(e.target.value, fontSizeSelect.value, lineHeightSlider.value));
-        fontSizeSelect?.addEventListener('change', (e) => applyReaderStyles(fontSelect.value, e.target.value, lineHeightSlider.value));
-        lineHeightSlider?.addEventListener('input', (e) => applyReaderStyles(fontSelect.value, fontSizeSelect.value, e.target.value));
+        DOM.fontSelect?.addEventListener('change', (e) => applyReaderStyles(e.target.value, DOM.fontSizeSlider.value, DOM.lineHeightSlider.value));
+        DOM.fontSizeSlider?.addEventListener('input', (e) => applyReaderStyles(DOM.fontSelect.value, e.target.value, DOM.lineHeightSlider.value));
+        DOM.lineHeightSlider?.addEventListener('input', (e) => applyReaderStyles(DOM.fontSelect.value, DOM.fontSizeSlider.value, e.target.value));
         doc.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (doc.fullscreenElement) doc.exitFullscreen().catch(console.warn);
-                else if (readerSettingsModal?.style.display !== 'none') closeReaderSettingsModal();
-                else if (chapterModal?.style.display !== 'none') closeChapterModal();
-                else if (novelModal?.style.display !== 'none') closeNovelModal();
+                else if (DOM.readerSettingsModal?.style.display !== 'none') closeReaderSettingsModal();
+                else if (DOM.chapterModal?.style.display !== 'none') closeChapterModal();
+                else if (DOM.novelModal?.style.display !== 'none') closeNovelModal();
             }
         });
         window.addEventListener('visibilitychange', () => { if (doc.visibilityState === 'hidden') saveReaderPosition(); });
         window.addEventListener('pagehide', () => saveReaderPosition());
+
+        DOM.novelListEl.addEventListener('click', e => {
+            const card = e.target.closest('.novel-card');
+            if (card) {
+                currentNovelId = card.dataset.novelId;
+                showPage('novel-info-page');
+            }
+        });
+        DOM.novelListEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const card = e.target.closest('.novel-card');
+                if (card) {
+                    e.preventDefault();
+                    currentNovelId = card.dataset.novelId;
+                    showPage('novel-info-page');
+                }
+            }
+        });
+
+        DOM.chapterListEl.addEventListener('click', async e => {
+            const target = e.target;
+            const card = target.closest('.chapter-card');
+            if (!card) return;
+            const chapterIndex = parseInt(card.dataset.chapterIndex, 10);
+            const actionTarget = target.closest('[data-action]');
+            if (!actionTarget) return;
+
+            const action = actionTarget.dataset.action;
+            const novel = findNovel(currentNovelId);
+            const chTitle = findChapter(currentNovelId, chapterIndex)?.title ?? i18n.get('text_chapter_placeholder', { index: chapterIndex + 1 });
+
+            switch (action) {
+                case 'read':
+                    currentChapterIndex = chapterIndex;
+                    await loadReaderPage(currentNovelId, currentChapterIndex);
+                    showPage('reader-page');
+                    break;
+                case 'edit':
+                    openChapterModal(currentNovelId, chapterIndex);
+                    break;
+                case 'download':
+                    await downloadChapter(currentNovelId, chapterIndex);
+                    break;
+                case 'delete':
+                    if (confirm(i18n.get('confirm_delete_chapter', { chapterTitle: chTitle }))) {
+                        try {
+                            if (await deleteChapterFile(currentNovelId, chapterIndex)) {
+                                novel.chapters.splice(chapterIndex, 1);
+                                if (novel.lastReadChapterIndex === chapterIndex) { novel.lastReadChapterIndex = -1; novel.lastReadScrollTop = 0; }
+                                else if (novel.lastReadChapterIndex > chapterIndex) novel.lastReadChapterIndex--;
+                                await saveNovelsMetadata();
+                                renderChapterList(currentNovelId, DOM.chapterSearchInput.value);
+                                loadNovelInfoPage(currentNovelId);
+                            } else alert(i18n.get('alert_failed_delete_chapter_file', { chapterTitle: chTitle }));
+                        } catch(err) { alert(i18n.get('alert_error_deleting_chapter', { chapterTitle: chTitle })); }
+                    }
+                    break;
+            }
+        });
     }
 
     initializeApp();
