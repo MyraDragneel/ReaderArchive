@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert_no_novels_to_export: "There are no novels to export.",
             alert_export_failed_apis: "Export failed: Storage system not ready or CompressionStream API not supported by your browser.",
             alert_export_chapter_read_warning: "Warning: {count} chapter(s) could not be read and will be marked as errors in the backup file.",
+            alert_export_cover_read_warning: "Warning: Could not read the cover image for \"{title}\". It will not be included in the backup.",
             alert_export_complete: "Export complete! Your backup file should be downloading now.",
             alert_export_failed: "Export failed: {errorMessage}",
             aria_exporting_novels: "Exporting novels...",
@@ -162,7 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
             sort_asc: "Oldest First",
             sort_desc: "Newest First",
             text_word_count: "{count} words",
-            text_word_count_na: "N/A"
+            text_word_count_na: "N/A",
+            aria_add_cover: "Add cover image",
+            aria_remove_cover: "Remove cover image"
         },
         id: {
             langName: "Bahasa Indonesia",
@@ -275,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert_no_novels_to_export: "Tidak ada novel untuk diekspor.",
             alert_export_failed_apis: "Ekspor gagal: Sistem penyimpanan belum siap atau API CompressionStream tidak didukung oleh browser Anda.",
             alert_export_chapter_read_warning: "Peringatan: {count} bab tidak dapat dibaca dan akan ditandai sebagai kesalahan dalam berkas cadangan.",
+            alert_export_cover_read_warning: "Peringatan: Gagal membaca gambar sampul untuk \"{title}\". Sampul tidak akan disertakan dalam cadangan.",
             alert_export_complete: "Ekspor selesai! Berkas cadangan Anda seharusnya sedang diunduh sekarang.",
             alert_export_failed: "Ekspor gagal: {errorMessage}",
             aria_exporting_novels: "Mengekspor novel...",
@@ -323,7 +327,9 @@ document.addEventListener('DOMContentLoaded', () => {
             sort_asc: "Terlama Dahulu",
             sort_desc: "Terbaru Dahulu",
             text_word_count: "{count} kata",
-            text_word_count_na: "T/A"
+            text_word_count_na: "T/A",
+            aria_add_cover: "Tambah gambar sampul",
+            aria_remove_cover: "Hapus gambar sampul"
         }
     };
 
@@ -346,6 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let chapterSortOrder = 'asc';
     let novelsMetadata = [];
     let opfsRoot = null;
+    let newCoverData = null;
+    let coverAction = 'none';
 
     const doc = document;
     const DOM = {
@@ -361,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         exportButton: doc.getElementById('export-btn'),
         importButton: doc.getElementById('import-btn'),
         deleteAllDataBtn: doc.getElementById('delete-all-data-btn'),
-        novelInfoTitleEl: doc.getElementById('novel-info-title-main'),
+        novelInfoTitleMainEl: doc.getElementById('novel-info-title-main'),
         novelInfoAuthorEl: doc.getElementById('novel-info-author'),
         novelInfoGenreEl: doc.getElementById('novel-info-genre'),
         novelInfoDescriptionEl: doc.getElementById('novel-info-description'),
@@ -396,6 +404,13 @@ document.addEventListener('DOMContentLoaded', () => {
         fontSizeValueSpan: doc.getElementById('font-size-value'),
         lineHeightSlider: doc.getElementById('line-height-slider'),
         lineHeightValueSpan: doc.getElementById('line-height-value'),
+        coverFileInput: doc.getElementById('cover-file-input'),
+        modalAddCoverBtn: doc.getElementById('modal-add-cover-btn'),
+        modalRemoveCoverBtn: doc.getElementById('modal-remove-cover-btn'),
+        novelModalCoverPreview: doc.getElementById('novel-modal-cover-preview'),
+        novelModalCoverPreviewWrapper: doc.querySelector('.modal-cover-preview-wrapper'),
+        novelInfoCoverContainer: doc.getElementById('novel-info-cover-container'),
+        novelInfoCoverImg: doc.getElementById('novel-info-cover-img'),
     };
 
     class I18nService {
@@ -617,6 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             opfsFileName: ch.opfsFileName ?? '', lastModified: ch.lastModified ?? null,
                             wordCount: ch.wordCount ?? undefined
                         })) : [],
+                        coverImageFileName: n.coverImageFileName ?? null,
                         lastReadChapterIndex: n.lastReadChapterIndex ?? -1,
                         lastReadScrollTop: n.lastReadScrollTop ?? 0
                     }));
@@ -699,6 +715,46 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         } catch (error) {
             if (error.name === 'NotFoundError') return true;
+            return false;
+        }
+    }
+
+    async function saveCoverImage(novelId, base64Data) {
+        if (!opfsRoot) throw new Error("OPFS not ready.");
+        const fileName = 'cover.txt';
+        try {
+            const novelDirHandle = await getNovelDir(novelId, true);
+            const fileHandle = await novelDirHandle.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(base64Data);
+            await writable.close();
+            return fileName;
+        } catch (error) {
+            throw new Error(`Failed to save cover image: ${error.message}`);
+        }
+    }
+
+    async function readCoverImage(novelId, fileName) {
+        if (!opfsRoot || !fileName) return null;
+        try {
+            const novelDirHandle = await getNovelDir(novelId, false);
+            const fileHandle = await novelDirHandle.getFileHandle(fileName);
+            return (await fileHandle.getFile()).text();
+        } catch (error) {
+            console.error(`Error reading cover image ${fileName}:`, error);
+            return null;
+        }
+    }
+
+    async function deleteCoverImage(novelId, fileName) {
+        if (!opfsRoot || !fileName) return true;
+        try {
+            const novelDirHandle = await getNovelDir(novelId, false);
+            await novelDirHandle.removeEntry(fileName);
+            return true;
+        } catch (error) {
+            if (error.name === 'NotFoundError') return true;
+            console.error(`Failed to delete cover image ${fileName}:`, error);
             return false;
         }
     }
@@ -790,10 +846,27 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.novelListEl.appendChild(frag);
     }
 
-    function loadNovelInfoPage(novelId) {
+    async function loadNovelInfoPage(novelId) {
         const novel = findNovel(novelId);
-        if (!novel) { alert(i18n.get('alert_error_finding_novel_info')); showPage('home-page'); return; }
-        DOM.novelInfoTitleEl.textContent = novel.title ?? i18n.get('text_untitled_novel');
+        if (!novel) {
+            alert(i18n.get('alert_error_finding_novel_info'));
+            showPage('home-page');
+            return;
+        }
+
+        if (novel.coverImageFileName) {
+            const coverData = await readCoverImage(novel.id, novel.coverImageFileName);
+            if (coverData) {
+                DOM.novelInfoCoverImg.src = coverData;
+                DOM.novelInfoCoverContainer.style.display = 'block';
+            } else {
+                DOM.novelInfoCoverContainer.style.display = 'none';
+            }
+        } else {
+            DOM.novelInfoCoverContainer.style.display = 'none';
+        }
+
+        DOM.novelInfoTitleMainEl.textContent = novel.title ?? i18n.get('text_untitled_novel');
         DOM.novelInfoAuthorEl.textContent = novel.author ?? i18n.get('details_na');
         DOM.novelInfoGenreEl.textContent = novel.genre ?? i18n.get('details_na');
         DOM.novelInfoDescriptionEl.textContent = novel.description || i18n.get('details_no_description');
@@ -875,17 +948,17 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             li.querySelector('.chapter-card__title').textContent = chTitle;
             li.querySelector('.chapter-card__word-count').textContent = wordCountText;
+            
             const metaElement = li.querySelector('.chapter-card__meta');
             const fullTimestampText = i18n.get('text_modified', { timestamp: formatTimestamp(lastModified) });
-            
             metaElement.textContent = fullTimestampText;
             metaElement.title = fullTimestampText;
             metaElement.onclick = (e) => {
-            if (metaElement.scrollWidth > metaElement.offsetWidth) {
-                e.preventDefault();
-                e.stopPropagation();
-                alert(fullTimestampText);
-               }
+                if (metaElement.scrollWidth > metaElement.offsetWidth) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert(fullTimestampText);
+                }
             };
 
             frag.appendChild(li);
@@ -941,39 +1014,92 @@ document.addEventListener('DOMContentLoaded', () => {
         if (focusable) focusable.focus();
     }
 
-    function openNovelModal(novelIdToEdit = null) {
-        const isEditing = !!novelIdToEdit; const novel = isEditing ? findNovel(novelIdToEdit) : null;
-        if (isEditing && !novel) { alert(i18n.get('alert_error_finding_novel_info')); return; }
+    async function openNovelModal(novelIdToEdit = null) {
+        const isEditing = !!novelIdToEdit;
+        const novel = isEditing ? findNovel(novelIdToEdit) : null;
+        if (isEditing && !novel) {
+            alert(i18n.get('alert_error_finding_novel_info'));
+            return;
+        }
+
+        newCoverData = null;
+        coverAction = 'none';
+        DOM.novelModalCoverPreview.src = '';
+        DOM.modalAddCoverBtn.style.display = 'block';
+        DOM.novelModalCoverPreviewWrapper.style.display = 'none';
+
         DOM.novelModalTitleHeading.textContent = i18n.get(isEditing ? 'modal_edit_novel_title' : 'modal_add_novel_title');
         DOM.novelModalIdInput.value = novelIdToEdit || '';
         DOM.novelModalTitleInput.value = novel?.title ?? '';
         DOM.novelModalAuthorInput.value = novel?.author ?? '';
         DOM.novelModalGenreInput.value = novel?.genre ?? '';
         DOM.novelModalDescriptionInput.value = novel?.description ?? '';
+
+        if (novel?.coverImageFileName) {
+            const coverData = await readCoverImage(novel.id, novel.coverImageFileName);
+            if (coverData) {
+                DOM.novelModalCoverPreview.src = coverData;
+                DOM.modalAddCoverBtn.style.display = 'none';
+                DOM.novelModalCoverPreviewWrapper.style.display = 'block';
+            }
+        }
+
         openModal(DOM.novelModal);
         DOM.novelModalTitleInput.focus();
         autoResizeTextarea(DOM.novelModalDescriptionInput);
     }
+    
     function closeNovelModal() { closeModal(DOM.novelModal); }
+
     async function saveNovelFromModal() {
-        const id = DOM.novelModalIdInput.value; const title = DOM.novelModalTitleInput.value.trim();
-        if (!title) { alert(i18n.get('alert_novel_title_required')); DOM.novelModalTitleInput.focus(); return; }
-        const author = DOM.novelModalAuthorInput.value.trim(); const genre = DOM.novelModalGenreInput.value.trim();
-        const description = DOM.novelModalDescriptionInput.value.trim(); const isEditing = !!id;
+        const id = DOM.novelModalIdInput.value;
+        const title = DOM.novelModalTitleInput.value.trim();
+        if (!title) {
+            alert(i18n.get('alert_novel_title_required'));
+            DOM.novelModalTitleInput.focus();
+            return;
+        }
+        const author = DOM.novelModalAuthorInput.value.trim();
+        const genre = DOM.novelModalGenreInput.value.trim();
+        const description = DOM.novelModalDescriptionInput.value.trim();
+        const isEditing = !!id;
+
         let novelToUpdate;
         if (isEditing) {
             novelToUpdate = findNovel(id);
-            if (!novelToUpdate) { alert(i18n.get('alert_error_saving_novel_update')); closeNovelModal(); return; }
-            Object.assign(novelToUpdate, { title, author, genre, description });
+            if (!novelToUpdate) {
+                alert(i18n.get('alert_error_saving_novel_update'));
+                closeNovelModal();
+                return;
+            }
         } else {
-            novelToUpdate = { id:crypto.randomUUID(), title, author, genre, description, chapters:[], lastReadChapterIndex:-1, lastReadScrollTop:0 };
-            novelsMetadata.push(novelToUpdate); currentNovelId = novelToUpdate.id;
+            novelToUpdate = { id: crypto.randomUUID(), title, author, genre, description, chapters: [], coverImageFileName: null, lastReadChapterIndex: -1, lastReadScrollTop: 0 };
+            novelsMetadata.push(novelToUpdate);
+            currentNovelId = novelToUpdate.id;
         }
-        await saveNovelsMetadata(); closeNovelModal();
+
+        if (coverAction === 'update' && newCoverData) {
+            if (novelToUpdate.coverImageFileName) {
+                await deleteCoverImage(novelToUpdate.id, novelToUpdate.coverImageFileName);
+            }
+            novelToUpdate.coverImageFileName = await saveCoverImage(novelToUpdate.id, newCoverData);
+        } else if (coverAction === 'delete') {
+            if (novelToUpdate.coverImageFileName) {
+                await deleteCoverImage(novelToUpdate.id, novelToUpdate.coverImageFileName);
+            }
+            novelToUpdate.coverImageFileName = null;
+        }
+
+        Object.assign(novelToUpdate, { title, author, genre, description });
+        await saveNovelsMetadata();
+        closeNovelModal();
         renderNovelList(DOM.novelSearchInput ? DOM.novelSearchInput.value : '');
+
         if (doc.getElementById('novel-info-page').classList.contains('active') && currentNovelId === novelToUpdate.id) {
             loadNovelInfoPage(novelToUpdate.id);
-        } else if (!isEditing && currentNovelId === novelToUpdate.id) await showPage('novel-info-page');
+        } else if (!isEditing && currentNovelId === novelToUpdate.id) {
+            await showPage('novel-info-page');
+        }
     }
 
     function calculateWordCount(text) {
@@ -1060,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.exportButton.disabled = true; DOM.exportButton.setAttribute('aria-label', i18n.get('aria_exporting_novels'));
         try {
             const exportMeta = JSON.parse(JSON.stringify(novelsMetadata));
-            const exportObj = { version: 2, metadata: exportMeta, chapters: {} };
+            const exportObj = { version: 2, metadata: exportMeta, chapters: {}, covers: {} };
             let chReadErrors = 0;
             for (const novel of exportObj.metadata) {
                  exportObj.chapters[novel.id] = {};
@@ -1070,6 +1196,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (content.startsWith(i18n.get('text_error_prefix'))) throw new Error(content.substring(i18n.get('text_error_prefix').length + 1));
                         exportObj.chapters[novel.id][i] = content;
                     } catch (readErr) { exportObj.chapters[novel.id][i] = `###EXPORT_READ_ERROR### ${readErr.message}`; chReadErrors++; }
+                }
+                if (novel.coverImageFileName) {
+                    try {
+                        const coverData = await readCoverImage(novel.id, novel.coverImageFileName);
+                        if (coverData) exportObj.covers[novel.id] = coverData;
+                    } catch (coverErr) {
+                        alert(i18n.get('alert_export_cover_read_warning', { title: novel.title }));
+                    }
                 }
             }
             if (chReadErrors > 0) alert(i18n.get('alert_export_chapter_read_warning', { count: chReadErrors }));
@@ -1116,6 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
             novelsMetadata = importObj.metadata.map(n => ({
                 id: n.id??crypto.randomUUID(), title:n.title??i18n.get('text_untitled_novel'), author:n.author??'', genre:n.genre??'', description:n.description??'',
                 chapters:(n.chapters||[]).map((ch,idx)=>({title:ch.title??i18n.get('text_chapter_placeholder',{index:idx+1}), opfsFileName:ch.opfsFileName??'', lastModified:ch.lastModified??nowISO, wordCount: ch.wordCount ?? undefined})),
+                coverImageFileName: n.coverImageFileName ?? null,
                 lastReadChapterIndex:n.lastReadChapterIndex??-1, lastReadScrollTop:n.lastReadScrollTop??0
             }));
             await saveNovelsMetadata();
@@ -1131,6 +1266,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         novel.chapters[i].wordCount = calculateWordCount(contentToSave);
                     }
                     if (!skip) try { await saveChapterContent(novel.id, i, contentToSave); } catch (err) { chapterSaveErrors++;}
+                }
+                if (importObj.covers && importObj.covers[novel.id]) {
+                    try {
+                        novel.coverImageFileName = await saveCoverImage(novel.id, importObj.covers[novel.id]);
+                    } catch (coverErr) {
+                        console.error(`Error saving imported cover for novel ${novel.id}:`, coverErr);
+                    }
                 }
                 importedNovelsCount++;
             }
@@ -1361,6 +1503,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     break;
             }
+        });
+
+        const handleCoverFileSelect = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                newCoverData = e.target.result;
+                coverAction = 'update';
+                DOM.novelModalCoverPreview.src = newCoverData;
+                DOM.modalAddCoverBtn.style.display = 'none';
+                DOM.novelModalCoverPreviewWrapper.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            DOM.coverFileInput.value = '';
+        };
+
+        DOM.modalAddCoverBtn?.addEventListener('click', () => DOM.coverFileInput.click());
+        DOM.novelModalCoverPreview?.addEventListener('click', () => DOM.coverFileInput.click());
+        DOM.coverFileInput?.addEventListener('change', handleCoverFileSelect);
+
+        DOM.modalRemoveCoverBtn?.addEventListener('click', () => {
+            newCoverData = null;
+            coverAction = 'delete';
+            DOM.novelModalCoverPreview.src = '';
+            DOM.modalAddCoverBtn.style.display = 'block';
+            DOM.novelModalCoverPreviewWrapper.style.display = 'none';
         });
 
         DOM.novelModalDescriptionInput?.addEventListener('input', handleTextareaInput);
