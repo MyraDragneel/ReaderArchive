@@ -95,9 +95,18 @@
                              <button type="button" id="bulk-download-chapters-btn" class="btn btn--secondary" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg><span data-i18n-key="btn_download_all_chapters"></span></button>
                          </div>
                      </div>
-                     <div class="search-bar search-bar--nested">
-                         <input type="search" id="chapter-search" class="form-control" data-i18n-placeholder="placeholder_search_chapters" data-i18n-aria-label="aria_search_chapters">
-                     </div>
+                     <div class="chapter-controls">
+                        <div class="search-bar search-bar--nested">
+                            <input type="search" id="chapter-search" class="form-control" data-i18n-placeholder="placeholder_search_chapters" data-i18n-aria-label="aria_search_chapters">
+                        </div>
+                        <div class="form-group chapter-sort-control">
+                            <label for="chapter-sort-select" class="form-label visually-hidden" data-i18n-key="form_sort_by"></label>
+                            <select id="chapter-sort-select" class="form-control" data-i18n-aria-label="aria_sort_chapters">
+                                <option value="asc" data-i18n-key="sort_asc"></option>
+                                <option value="desc" data-i18n-key="sort_desc"></option>
+                            </select>
+                        </div>
+                    </div>
                      <ul id="chapter-list" class="item-list">
                          <li class="list-placeholder" data-i18n-key="placeholder_no_chapters"></li>
                      </ul>
@@ -108,7 +117,10 @@
         <div id="reader-page" class="page">
             <header class="app-header app-header--reader">
                  <button type="button" class="btn btn--icon back-btn reader-back-btn" data-target="novel-info-page" data-i18n-aria-label="aria_back_novel_info"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg></button>
-                 <h2 id="reader-chapter-title" class="app-header__title app-header__title--ellipsis"></h2>
+                 <div class="app-header__title-wrapper">
+                    <h2 id="reader-chapter-title" class="app-header__title app-header__title--ellipsis"></h2>
+                    <p id="reader-word-count" class="app-header__subtitle"></p>
+                 </div>
                  <div class="app-header__actions">
                     <button type="button" id="reader-fullscreen-btn" class="btn btn--icon" data-i18n-aria-label="aria_enter_fullscreen">
                         <svg class="icon-enter-fullscreen" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"></path></svg>

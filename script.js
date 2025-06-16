@@ -155,7 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
             theme_switch_dark: "Switch to Dark Theme",
             text_chapter_placeholder: "Chapter {index}",
             text_untitled_novel: "Untitled Novel",
-            text_error_prefix: "Error:"
+            text_error_prefix: "Error:",
+            form_sort_by: "Sort by:",
+            aria_sort_chapters: "Sort chapters",
+            sort_asc: "Oldest First",
+            sort_desc: "Newest First",
+            text_word_count: "{count} words",
+            text_word_count_na: "N/A"
         },
         id: {
             langName: "Bahasa Indonesia",
@@ -309,7 +315,13 @@ document.addEventListener('DOMContentLoaded', () => {
             theme_switch_dark: "Ganti ke Tema Gelap",
             text_chapter_placeholder: "Bab {index}",
             text_untitled_novel: "Novel Tanpa Judul",
-            text_error_prefix: "Kesalahan:"
+            text_error_prefix: "Kesalahan:",
+            form_sort_by: "Urutkan berdasarkan:",
+            aria_sort_chapters: "Urutkan bab",
+            sort_asc: "Terlama Dahulu",
+            sort_desc: "Terbaru Dahulu",
+            text_word_count: "{count} kata",
+            text_word_count_na: "T/A"
         }
     };
 
@@ -329,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentNovelId = null;
     let currentChapterIndex = -1;
+    let chapterSortOrder = 'asc';
     let novelsMetadata = [];
     let opfsRoot = null;
 
@@ -353,10 +366,12 @@ document.addEventListener('DOMContentLoaded', () => {
         novelInfoLastReadEl: doc.getElementById('novel-info-last-read'),
         chapterListEl: doc.getElementById('chapter-list'),
         chapterSearchInput: doc.getElementById('chapter-search'),
+        chapterSortSelect: doc.getElementById('chapter-sort-select'),
         bulkDownloadBtn: doc.getElementById('bulk-download-chapters-btn'),
         readerMainContent: doc.getElementById('reader-main-content'),
         readerContentEl: doc.getElementById('reader-content'),
         readerChapterTitleEl: doc.getElementById('reader-chapter-title'),
+        readerWordCountEl: doc.getElementById('reader-word-count'),
         prevChapterBtn: doc.getElementById('prev-chapter-btn'),
         nextChapterBtn: doc.getElementById('next-chapter-btn'),
         readerFullscreenBtn: doc.getElementById('reader-fullscreen-btn'),
@@ -401,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.translatePage();
                 this.languageChangeListeners.forEach(cb => cb(this.currentLang));
             } else {
-                console.warn(`Language '${langCode}' not found. Falling back to 'en'.`);
                 if (this.currentLang !== 'en') this.setLanguage('en', savePreference);
             }
         }
@@ -443,6 +457,23 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    function autoResizeTextarea(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+
+    function handleTextareaInput(event) {
+        const textarea = event.target;
+        const modalContent = textarea.closest('.modal-content');
+        
+        autoResizeTextarea(textarea);
+
+        if (modalContent) {
+            modalContent.scrollTop = modalContent.scrollHeight;
+        }
+    }
+
     async function initializeApp() {
         registerServiceWorker();
         if (!await initOPFS()) alert(i18n.get('alert_opfs_unavailable'));
@@ -461,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker registered:', reg.scope))
                 .catch(err => console.error('Service Worker registration failed:', err));
         }
     }
@@ -472,7 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 opfsRoot = await navigator.storage.getDirectory();
                 return true;
             }
-            console.warn('Origin Private File System API not available.');
         } catch (error) {
             console.error('OPFS Initialization Error:', error);
         }
@@ -571,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadNovelsMetadata() {
         novelsMetadata = [];
-        if (!opfsRoot) { console.warn("OPFS not available, metadata cannot be loaded."); return; }
+        if (!opfsRoot) { return; }
         try {
             const fileHandle = await opfsRoot.getFileHandle(METADATA_OPFS_FILENAME, { create: false });
             const text = await (await fileHandle.getFile()).text();
@@ -583,22 +612,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         author: n.author ?? '', genre: n.genre ?? '', description: n.description ?? '',
                         chapters: Array.isArray(n.chapters) ? n.chapters.map((ch, idx) => ({
                             title: ch.title ?? i18n.get('text_chapter_placeholder', { index: idx + 1 }),
-                            opfsFileName: ch.opfsFileName ?? '', lastModified: ch.lastModified ?? null
+                            opfsFileName: ch.opfsFileName ?? '', lastModified: ch.lastModified ?? null,
+                            wordCount: ch.wordCount ?? undefined
                         })) : [],
                         lastReadChapterIndex: n.lastReadChapterIndex ?? -1,
                         lastReadScrollTop: n.lastReadScrollTop ?? 0
                     }));
-                } else console.warn("Parsed OPFS metadata is not an array.");
+                }
             }
         } catch (error) {
-            if (error.name === 'NotFoundError') console.log(`OPFS file "${METADATA_OPFS_FILENAME}" not found.`);
-            else { console.error(`Error reading "${METADATA_OPFS_FILENAME}" from OPFS:`, error); alert(i18n.get('alert_error_reading_metadata_opfs')); }
+            if (error.name !== 'NotFoundError') { alert(i18n.get('alert_error_reading_metadata_opfs')); }
         }
         novelsMetadata.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', i18n.currentLang, { sensitivity: 'base' }));
     }
 
     async function saveNovelsMetadata() {
-        if (!opfsRoot) { console.error("OPFS not available, metadata cannot be saved."); alert(i18n.get('alert_error_saving_metadata_opfs')); return; }
+        if (!opfsRoot) { alert(i18n.get('alert_error_saving_metadata_opfs')); return; }
         try {
             novelsMetadata.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', i18n.currentLang, { sensitivity: 'base' }));
             const jsonString = JSON.stringify(novelsMetadata);
@@ -607,7 +636,6 @@ document.addEventListener('DOMContentLoaded', () => {
             await writable.write(jsonString);
             await writable.close();
         } catch (error) {
-            console.error(`Error saving "${METADATA_OPFS_FILENAME}" to OPFS:`, error);
             alert(i18n.get('alert_error_saving_metadata_opfs'));
         }
     }
@@ -637,7 +665,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const writable = await fileHandle.createWritable();
             await writable.write(content); await writable.close();
         } catch (error) {
-            console.error(`Failed to save chapter file ${safeFileName}:`, error);
             throw new Error(`Failed to save chapter file: ${error.message}`);
         }
     }
@@ -654,14 +681,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileHandle = await novelDirHandle.getFileHandle(safeFileName);
             return (await fileHandle.getFile()).text();
         } catch (error) {
-            console.warn(`Error reading chapter ${safeFileName} for novel ${novelId}:`, error);
             const errKey = error.name === 'NotFoundError' ? 'text_error_file_not_found' : 'text_error_reading_file';
             return `${i18n.get('text_error_prefix')} ${i18n.get(errKey, { fileName: safeFileName, errorMessage: error.message })}`;
         }
     }
 
     async function deleteChapterFile(novelId, chapterIndex) {
-        if (!opfsRoot) { console.warn("OPFS not available for deleting chapter file."); return false; }
+        if (!opfsRoot) { return false; }
         const chapter = findChapter(novelId, chapterIndex);
         if (!chapter || !chapter.opfsFileName) return true;
         const safeFileName = sanitizeFilename(chapter.opfsFileName);
@@ -671,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         } catch (error) {
             if (error.name === 'NotFoundError') return true;
-            console.error(`Failed to delete chapter file ${safeFileName}:`, error); return false;
+            return false;
         }
     }
 
@@ -740,17 +766,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const frag = doc.createDocumentFragment();
         filtered.forEach(novel => {
-            const li = doc.createElement('li'); li.className = 'novel-card'; li.dataset.novelId = novel.id;
-            li.setAttribute('role', 'button'); li.tabIndex = 0;
-            const title = novel.title ?? i18n.get('text_untitled_novel');
+            const li = doc.createElement('li');
+            li.className = 'novel-card';
+            li.dataset.novelId = novel.id;
+            li.setAttribute('role', 'button');
+            li.tabIndex = 0;
+            const title = novel.title || i18n.get('text_untitled_novel');
             li.setAttribute('aria-label', i18n.get('aria_open_novel', { title }));
+
             li.innerHTML = `
                 <div class="novel-card__content">
-                    <h3 class="novel-card__title">${title}</h3>
-                    <p class="novel-card__author">${novel.author || i18n.get('text_unknown_author')}</p>
+                    <h3 class="novel-card__title"></h3>
+                    <p class="novel-card__author"></p>
                 </div>
                 <svg class="novel-card__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
             `;
+            li.querySelector('.novel-card__title').textContent = title;
+            li.querySelector('.novel-card__author').textContent = novel.author || i18n.get('text_unknown_author');
             frag.appendChild(li);
         });
         DOM.novelListEl.appendChild(frag);
@@ -800,8 +832,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const novel = findNovel(novelId); DOM.chapterListEl.innerHTML = '';
         const chapters = novel?.chapters || [];
         const lowerFilter = filterTerm.toLowerCase().trim();
-        const filtered = chapters.map((ch, idx) => ({ ...ch, originalIndex: idx }))
-            .filter(ch => !lowerFilter || (ch.title ?? '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter));
+
+        let displayChapters = chapters.map((ch, idx) => ({ ...ch, originalIndex: idx }));
+        if (chapterSortOrder === 'desc') {
+            displayChapters.reverse();
+        }
+
+        const filtered = displayChapters.filter(ch => !lowerFilter || (ch.title ?? '').toLocaleLowerCase(i18n.currentLang).includes(lowerFilter));
         const hasAnyChaps = chapters.length > 0;
         DOM.bulkDownloadBtn.disabled = !hasAnyChaps;
         DOM.bulkDownloadBtn.setAttribute('aria-disabled', String(!hasAnyChaps));
@@ -812,13 +849,21 @@ document.addEventListener('DOMContentLoaded', () => {
             DOM.chapterListEl.appendChild(li); return;
         }
         const frag = doc.createDocumentFragment();
-        filtered.forEach(({ title, lastModified, originalIndex }) => {
-            const li = doc.createElement('li'); li.className = 'chapter-card'; li.dataset.chapterIndex = originalIndex;
+        filtered.forEach(({ title, lastModified, wordCount, originalIndex }) => {
+            const li = doc.createElement('li');
+            li.className = 'chapter-card';
+            li.dataset.chapterIndex = originalIndex;
             const chTitle = title ?? i18n.get('text_chapter_placeholder', { index: originalIndex + 1 });
+
+            const wordCountText = typeof wordCount !== 'undefined'
+                ? i18n.get('text_word_count', { count: wordCount })
+                : i18n.get('text_word_count_na');
+
             li.innerHTML = `
                 <div class="chapter-card__main" role="button" tabindex="0" data-action="read" aria-label="${i18n.get('aria_read_chapter', { chapterTitle: chTitle })}">
-                    <h4 class="chapter-card__title">${chTitle}</h4>
-                    <p class="chapter-card__meta">${i18n.get('text_modified', { timestamp: formatTimestamp(lastModified) })}</p>
+                    <h4 class="chapter-card__title"></h4>
+                    <p class="chapter-card__word-count"></p>
+                    <p class="chapter-card__meta"></p>
                 </div>
                 <div class="chapter-card__actions">
                     <button type="button" class="btn btn--icon" data-action="edit" aria-label="${i18n.get('aria_edit_chapter', { chapterTitle: chTitle })}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg></button>
@@ -826,6 +871,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" class="btn btn--icon btn--icon-danger" data-action="delete" aria-label="${i18n.get('aria_delete_chapter', { chapterTitle: chTitle })}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
                 </div>
             `;
+            li.querySelector('.chapter-card__title').textContent = chTitle;
+            li.querySelector('.chapter-card__word-count').textContent = wordCountText;
+            const metaElement = li.querySelector('.chapter-card__meta');
+            const fullTimestampText = i18n.get('text_modified', { timestamp: formatTimestamp(lastModified) });
+            
+            metaElement.textContent = fullTimestampText;
+            metaElement.title = fullTimestampText;
+            metaElement.onclick = (e) => {
+            if (metaElement.scrollWidth > metaElement.offsetWidth) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert(fullTimestampText);
+               }
+            };
+
             frag.appendChild(li);
         });
         DOM.chapterListEl.appendChild(frag);
@@ -835,6 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const novel = findNovel(novelId); const chapter = findChapter(novelId, chapterIndexToLoad);
         if (!chapter || !novel) {
             DOM.readerChapterTitleEl.textContent = i18n.get('text_error_formatting_timestamp');
+            DOM.readerWordCountEl.textContent = '';
             DOM.readerContentEl.textContent = i18n.get('text_error_loading_chapter');
             DOM.prevChapterBtn.disabled = true; DOM.prevChapterBtn.setAttribute('aria-disabled', 'true');
             DOM.nextChapterBtn.disabled = true; DOM.nextChapterBtn.setAttribute('aria-disabled', 'true');
@@ -842,6 +903,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         currentChapterIndex = chapterIndexToLoad;
         DOM.readerChapterTitleEl.textContent = chapter.title ?? i18n.get('text_chapter_placeholder', { index: currentChapterIndex + 1 });
+        if (typeof chapter.wordCount !== 'undefined') {
+            DOM.readerWordCountEl.textContent = i18n.get('text_word_count', { count: chapter.wordCount });
+        } else {
+            DOM.readerWordCountEl.textContent = i18n.get('text_word_count_na');
+        }
+
         DOM.readerContentEl.textContent = i18n.get('text_loading_chapter_content'); DOM.readerContentEl.style.color = '';
         DOM.readerMainContent.scrollTop = 0;
         const rawContent = await readChapterContent(novelId, currentChapterIndex);
@@ -881,7 +948,9 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.novelModalAuthorInput.value = novel?.author ?? '';
         DOM.novelModalGenreInput.value = novel?.genre ?? '';
         DOM.novelModalDescriptionInput.value = novel?.description ?? '';
-        openModal(DOM.novelModal); DOM.novelModalTitleInput.focus();
+        openModal(DOM.novelModal);
+        DOM.novelModalTitleInput.focus();
+        autoResizeTextarea(DOM.novelModalDescriptionInput);
     }
     function closeNovelModal() { closeModal(DOM.novelModal); }
     async function saveNovelFromModal() {
@@ -905,6 +974,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (!isEditing && currentNovelId === novelToUpdate.id) await showPage('novel-info-page');
     }
 
+    function calculateWordCount(text) {
+        if (!text || typeof text !== 'string') return 0;
+        return text.trim().split(/\s+/).filter(Boolean).length;
+    }
+
     async function openChapterModal(novelId, chapterIndexToEdit = null) {
         const novel = findNovel(novelId); if (!novel) { alert(i18n.get('alert_error_finding_associated_novel')); return; }
         const isEditing = chapterIndexToEdit !== null && chapterIndexToEdit >= 0;
@@ -915,7 +989,8 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.chapterModalIndexInput.value = isEditing ? String(chapterIndexToEdit) : '';
         DOM.chapterModalTitleInput.value = chapter?.title ?? '';
         DOM.chapterModalContentInput.value = ''; DOM.chapterModalContentInput.disabled = true;
-        openModal(DOM.chapterModal); DOM.chapterModalTitleInput.focus();
+        openModal(DOM.chapterModal);
+        DOM.chapterModalTitleInput.focus();
         if (isEditing) {
             DOM.chapterModalContentInput.value = i18n.get('text_loading_chapter_modal_content');
             try {
@@ -923,9 +998,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (rawContent.startsWith(i18n.get('text_error_prefix'))) DOM.chapterModalContentInput.value = i18n.get('text_error_loading_chapter_modal_content', { errorDetails: rawContent.substring(i18n.get('text_error_prefix').length + 1) });
                 else DOM.chapterModalContentInput.value = rawContent;
             } catch(e) { DOM.chapterModalContentInput.value = i18n.get('text_critical_error_loading_chapter_modal_content', { errorMessage: e.message }); }
-            finally { DOM.chapterModalContentInput.disabled = false; }
+            finally {
+                DOM.chapterModalContentInput.disabled = false;
+                autoResizeTextarea(DOM.chapterModalContentInput);
+            }
         } else {
             DOM.chapterModalContentInput.disabled = false;
+            autoResizeTextarea(DOM.chapterModalContentInput);
         }
     }
     function closeChapterModal() { closeModal(DOM.chapterModal); }
@@ -940,9 +1019,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isNewCh && (isNaN(chIdx) || chIdx < 0 || chIdx >= novel.chapters.length)) {
             alert(i18n.get('alert_error_chapter_save_invalid_index')); closeChapterModal(); return;
         }
+        const wordCount = calculateWordCount(content);
         let chData; const nowISO = new Date().toISOString();
-        if (isNewCh) chData = { title, opfsFileName: '', lastModified: nowISO };
-        else { chData = novel.chapters[chIdx]; chData.title = title; }
+        if (isNewCh) {
+            chData = { title, opfsFileName: '', lastModified: nowISO, wordCount };
+        } else {
+            chData = novel.chapters[chIdx];
+            chData.title = title;
+            chData.wordCount = wordCount;
+        }
         chData.lastModified = nowISO;
         try {
             if (isNewCh) novel.chapters.push(chData);
@@ -1028,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let importedNovelsCount = 0; let chapterSaveErrors = 0; const nowISO = new Date().toISOString();
             novelsMetadata = importObj.metadata.map(n => ({
                 id: n.id??crypto.randomUUID(), title:n.title??i18n.get('text_untitled_novel'), author:n.author??'', genre:n.genre??'', description:n.description??'',
-                chapters:(n.chapters||[]).map((ch,idx)=>({title:ch.title??i18n.get('text_chapter_placeholder',{index:idx+1}), opfsFileName:ch.opfsFileName??'', lastModified:ch.lastModified??nowISO})),
+                chapters:(n.chapters||[]).map((ch,idx)=>({title:ch.title??i18n.get('text_chapter_placeholder',{index:idx+1}), opfsFileName:ch.opfsFileName??'', lastModified:ch.lastModified??nowISO, wordCount: ch.wordCount ?? undefined})),
                 lastReadChapterIndex:n.lastReadChapterIndex??-1, lastReadScrollTop:n.lastReadScrollTop??0
             }));
             await saveNovelsMetadata();
@@ -1037,10 +1122,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let i = 0; i < novel.chapters.length; i++) {
                     const content = chapterData[i]; let contentToSave = ''; let skip = false;
                     if (typeof content === 'string') {
-                        if (content.startsWith('###EXPORT_READ_ERROR###')) { console.warn(i18n.get('warning_import_skipped_export_error',{novelId:novel.id, chapterIndex:i})); skip=true; }
+                        if (content.startsWith('###EXPORT_READ_ERROR###')) { skip=true; }
                         else contentToSave = content;
-                    } else console.warn(i18n.get('warning_import_missing_content',{novelId:novel.id,chapterIndex:i}));
-                    if (!skip) try { await saveChapterContent(novel.id, i, contentToSave); } catch (err) { chapterSaveErrors++; console.error(`Err saving ch ${i} for novel ${novel.id}:`,err);}
+                    }
+                    if (typeof novel.chapters[i].wordCount === 'undefined') {
+                        novel.chapters[i].wordCount = calculateWordCount(contentToSave);
+                    }
+                    if (!skip) try { await saveChapterContent(novel.id, i, contentToSave); } catch (err) { chapterSaveErrors++;}
                 }
                 importedNovelsCount++;
             }
@@ -1140,7 +1228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleFullScreen() {
-        if (!doc.fullscreenEnabled) { console.warn("Fullscreen API not enabled."); return; }
+        if (!doc.fullscreenEnabled) { return; }
         if (!doc.fullscreenElement) doc.documentElement.requestFullscreen().catch(err => alert(i18n.get('alert_fullscreen_error',{errorMessage:err.message, errorName:err.name})));
         else if (doc.exitFullscreen) doc.exitFullscreen();
     }
@@ -1176,6 +1264,10 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.bulkDownloadBtn?.addEventListener('click', () => { if (currentNovelId) downloadAllChaptersCombined(currentNovelId); });
         const debouncedRenderChapters = debounce((id, filter) => { if (currentNovelId === id) renderChapterList(id, filter); }, SEARCH_DEBOUNCE_DELAY);
         DOM.chapterSearchInput?.addEventListener('input', (e) => { if (currentNovelId) debouncedRenderChapters(currentNovelId, e.target.value); });
+        DOM.chapterSortSelect?.addEventListener('change', (e) => {
+            chapterSortOrder = e.target.value;
+            if (currentNovelId) renderChapterList(currentNovelId, DOM.chapterSearchInput.value);
+        });
         doc.getElementById('save-novel-modal-btn')?.addEventListener('click', saveNovelFromModal);
         doc.getElementById('cancel-novel-modal-btn')?.addEventListener('click', closeNovelModal);
         DOM.novelModal?.addEventListener('click', (e) => { if (e.target === DOM.novelModal) closeNovelModal(); });
@@ -1268,6 +1360,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
         });
+
+        DOM.novelModalDescriptionInput?.addEventListener('input', handleTextareaInput);
+        DOM.chapterModalContentInput?.addEventListener('input', handleTextareaInput);
     }
 
     initializeApp();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'local-novel-reader-cache-v14.5'; // Incremented version
+const CACHE_NAME = 'local-novel-reader-cache-v15.0'; // Incremented version
 const urlsToCache = [
   './',
   'index.html',
