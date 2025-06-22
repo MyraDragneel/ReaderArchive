@@ -20,12 +20,18 @@
             <header class="app-header">
                 <h1 class="app-header__title" data-i18n-key="home_header"></h1>
                 <div class="app-header__actions">
-                    <button type="button" id="add-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_add_novel"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z"></path></svg></button>
-                    <button type="button" id="import-btn" class="btn btn--icon" data-i18n-aria-label="aria_import_archive">📥</button>
-                    <input type="file" id="import-file-input" accept=".novelarchive.gz" aria-hidden="true">
-                    <button type="button" id="export-btn" class="btn btn--icon" data-i18n-aria-label="aria_export_all">📤</button>
-                    <button type="button" id="theme-toggle-btn" class="btn btn--icon" data-i18n-aria-label="aria_toggle_theme">🌓</button>
-                    <button type="button" id="settings-btn" class="btn btn--icon" data-i18n-aria-label="aria_open_settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg></button>
+                    <button type="button" id="add-novel-btn" class="btn btn--icon btn--icon-accent" data-i18n-aria-label="aria_add_novel"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z"></path></svg></button>
+                    
+                    <div class="header-menu-container">
+                        <button type="button" id="more-actions-btn" class="btn btn--icon btn--icon-accent" aria-label="More actions"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg></button>
+                        <div id="header-menu" class="header-menu">
+                            <button type="button" id="import-btn" class="header-menu__item">📥 <span data-i18n-key="aria_import_archive"></span></button>
+                            <input type="file" id="import-file-input" accept=".novelarchive.gz" aria-hidden="true">
+                            <button type="button" id="export-btn" class="header-menu__item">📤 <span data-i18n-key="aria_export_all"></span></button>
+                            <button type="button" id="theme-toggle-btn" class="header-menu__item" data-i18n-aria-label="aria_toggle_theme"></button>
+                            <button type="button" id="settings-btn" class="header-menu__item">⚙️<span data-i18n-key="aria_open_settings"></span></button>
+                        </div>
+                    </div>
                 </div>
             </header>
             <div class="search-bar">
@@ -64,57 +70,61 @@
         <div id="novel-info-page" class="page">
             <header class="app-header">
                  <button type="button" class="btn back-btn" data-target="home-page" data-i18n-aria-label="aria_back_home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg><span data-i18n-key="btn_back"></span></button>
-                 <h1 class="app-header__title"></h1>
                  <div class="app-header__actions">
                      <button type="button" id="edit-novel-btn" class="btn btn--icon" data-i18n-aria-label="aria_edit_novel_meta"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg></button>
                      <button type="button" id="delete-novel-btn" class="btn btn--icon btn--icon-danger" data-i18n-aria-label="aria_delete_this_novel"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
                  </div>
             </header>
             <main class="app-main">
-                <section id="novel-metadata" class="novel-details-section" aria-labelledby="novel-metadata-heading">
-                    <div id="novel-info-cover-container" class="novel-cover-image-container">
-                        <img id="novel-info-cover-img" src="" alt="Novel cover">
-                    </div>
-                    <h1 id="novel-info-title-main" class="main-content-title"></h1>
-                    <h2 id="novel-metadata-heading" class="visually-hidden" data-i18n-key="details_novel_details"></h2>
-                    <div class="novel-meta-grid">
-                        <strong data-i18n-key="details_author"></strong> <span id="novel-info-author"></span>
-                        <strong data-i18n-key="details_genre"></strong> <span id="novel-info-genre"></span>
-                    </div>
-                    <div class="novel-description">
-                        <strong data-i18n-key="details_description"></strong>
-                        <div id="novel-info-description" class="text-content-box"></div>
-                    </div>
-                </section>
-                <div class="last-read-banner">
-                    <strong data-i18n-key="details_last_read"></strong>
-                    <span id="novel-info-last-read" class="last-read-banner__chapter" tabindex="-1" data-i18n-key="details_never_read"></span>
+                <div class="page-loader">
+                    <div class="spinner"></div>
                 </div>
-                <hr class="divider">
-                <section class="chapters-section" aria-labelledby="chapters-heading">
-                     <div class="section-header">
-                         <h2 id="chapters-heading" class="section-title" data-i18n-key="details_chapters"></h2>
-                         <div class="button-group">
-                             <button type="button" id="add-chapter-btn" class="btn btn--primary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z"></path></svg><span data-i18n-key="btn_add_chapter"></span></button>
-                             <button type="button" id="bulk-download-chapters-btn" class="btn btn--secondary" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg><span data-i18n-key="btn_download_all_chapters"></span></button>
-                         </div>
-                     </div>
-                     <div class="chapter-controls">
-                        <div class="search-bar search-bar--nested">
-                            <input type="search" id="chapter-search" class="form-control" data-i18n-placeholder="placeholder_search_chapters" data-i18n-aria-label="aria_search_chapters">
+                <div class="page-content-wrapper">
+                    <section id="novel-metadata" class="novel-details-section" aria-labelledby="novel-metadata-heading">
+                        <div id="novel-info-cover-container" class="novel-cover-image-container">
+                            <img id="novel-info-cover-img" src="" alt="Novel cover">
                         </div>
-                        <div class="form-group chapter-sort-control">
-                            <label for="chapter-sort-select" class="form-label visually-hidden" data-i18n-key="form_sort_by"></label>
-                            <select id="chapter-sort-select" class="form-control" data-i18n-aria-label="aria_sort_chapters">
-                                <option value="asc" data-i18n-key="sort_asc"></option>
-                                <option value="desc" data-i18n-key="sort_desc"></option>
-                            </select>
+                        <h1 id="novel-info-title-main" class="main-content-title"></h1>
+                        <h2 id="novel-metadata-heading" class="visually-hidden" data-i18n-key="details_novel_details"></h2>
+                        <div class="novel-meta-grid">
+                            <strong data-i18n-key="details_author"></strong> <span id="novel-info-author"></span>
+                            <strong data-i18n-key="details_genre"></strong> <span id="novel-info-genre"></span>
                         </div>
+                        <div class="novel-description">
+                            <strong data-i18n-key="details_description"></strong>
+                            <div id="novel-info-description" class="text-content-box"></div>
+                        </div>
+                    </section>
+                    <div class="last-read-banner">
+                        <strong data-i18n-key="details_last_read"></strong>
+                        <span id="novel-info-last-read" class="last-read-banner__chapter" tabindex="-1" data-i18n-key="details_never_read"></span>
                     </div>
-                     <ul id="chapter-list" class="item-list">
-                         <li class="list-placeholder" data-i18n-key="placeholder_no_chapters"></li>
-                     </ul>
-                </section>
+                    <hr class="divider">
+                    <section class="chapters-section" aria-labelledby="chapters-heading">
+                         <div class="section-header">
+                             <h2 id="chapters-heading" class="section-title" data-i18n-key="details_chapters"></h2>
+                             <div class="button-group">
+                                 <button type="button" id="add-chapter-btn" class="btn btn--primary"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z"></path></svg><span data-i18n-key="btn_add_chapter"></span></button>
+                                 <button type="button" id="bulk-download-chapters-btn" class="btn btn--secondary" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg><span data-i18n-key="btn_download_all_chapters"></span></button>
+                             </div>
+                         </div>
+                         <div class="chapter-controls">
+                            <div class="search-bar search-bar--nested">
+                                <input type="search" id="chapter-search" class="form-control" data-i18n-placeholder="placeholder_search_chapters" data-i18n-aria-label="aria_search_chapters">
+                            </div>
+                            <div class="form-group chapter-sort-control">
+                                <label for="chapter-sort-select" class="form-label visually-hidden" data-i18n-key="form_sort_by"></label>
+                                <select id="chapter-sort-select" class="form-control" data-i18n-aria-label="aria_sort_chapters">
+                                    <option value="asc" data-i18n-key="sort_asc"></option>
+                                    <option value="desc" data-i18n-key="sort_desc"></option>
+                                </select>
+                            </div>
+                        </div>
+                         <ul id="chapter-list" class="item-list">
+                             <li class="list-placeholder" data-i18n-key="placeholder_no_chapters"></li>
+                         </ul>
+                    </section>
+                </div>
             </main>
         </div>
 
@@ -134,9 +144,14 @@
                  </div>
             </header>
             <main id="reader-main-content" class="app-main app-main--reader">
-                 <div id="reader-content" class="reader-text-content" aria-live="polite">
-                     <p data-i18n-key="text_loading"></p>
-                 </div>
+                <div class="page-loader">
+                    <div class="spinner"></div>
+                </div>
+                <div class="page-content-wrapper">
+                     <div id="reader-content" class="reader-text-content" aria-live="polite">
+                         <p data-i18n-key="text_loading"></p>
+                     </div>
+                </div>
             </main>
             <footer class="app-footer app-footer--reader">
                  <button type="button" id="prev-chapter-btn" class="btn btn--navigation" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg><span data-i18n-key="btn_previous"></span></button>
@@ -222,6 +237,14 @@
                 <div class="modal-actions modal-actions--centered">
                     <button type="button" id="close-reader-settings-modal-btn" class="btn btn--secondary" data-i18n-key="btn_close"></button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Processing Modal -->
+        <div id="processing-modal" class="modal-overlay" role="alertdialog" aria-modal="true" aria-labelledby="processing-modal-text">
+            <div class="modal-content modal-content--processing">
+                <div class="spinner"></div>
+                <p id="processing-modal-text" class="processing-modal__text"></p>
             </div>
         </div>
 

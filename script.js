@@ -2,6 +2,9 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    /**
+     * @constant {object} ALL_TRANSLATIONS - Contains all language strings for the application.
+     */
     const ALL_TRANSLATIONS = {
         en: {
             langName: "English",
@@ -89,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert_error_chapter_save_invalid_index: "Error: Invalid chapter index provided for editing.",
             alert_chapter_save_failed: "Chapter save failed: {errorMessage}\n\nPlease check storage permissions or try again.",
             text_loading_chapter_modal_content: "Loading chapter content...",
-            text_error_loading_chapter_modal_content: "Could not load existing content.\n{errorDetails}\n\nYou can still edit the title or enter new content below and save.",
+            text_error_loading_chapter_modal_content: "Could not load existing content.\n{errorDetails}\n\nAnda masih dapat mengedit judul atau memasukkan konten baru di bawah dan menyimpan.",
             text_critical_error_loading_chapter_modal_content: "Critical error loading content: {errorMessage}",
             modal_reader_display_title: "Reader Display",
             form_font_family: "Font Family",
@@ -165,7 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
             text_word_count: "{count} words",
             text_word_count_na: "N/A",
             aria_add_cover: "Add cover image",
-            aria_remove_cover: "Remove cover image"
+            aria_remove_cover: "Remove cover image",
+            text_card_chapters: "{count} Chapters"
         },
         id: {
             langName: "Bahasa Indonesia",
@@ -329,10 +333,21 @@ document.addEventListener('DOMContentLoaded', () => {
             text_word_count: "{count} kata",
             text_word_count_na: "T/A",
             aria_add_cover: "Tambah gambar sampul",
-            aria_remove_cover: "Hapus gambar sampul"
+            aria_remove_cover: "Hapus gambar sampul",
+            text_card_chapters: "{count} Bab"
         }
     };
 
+    /**
+     * @constant {string} METADATA_OPFS_FILENAME - Filename for the main metadata file in OPFS.
+     * @constant {string} THEME_KEY - localStorage key for the theme setting.
+     * @constant {string} FONT_KEY - localStorage key for the font family setting.
+     * @constant {string} FONT_SIZE_KEY - localStorage key for the font size setting.
+     * @constant {string} LINE_SPACING_KEY - localStorage key for the line spacing setting.
+     * @constant {string} LANG_KEY - localStorage key for the language setting.
+     * @constant {number} MODAL_ANIMATION_DURATION - Duration for modal animations in ms.
+     * @constant {number} SEARCH_DEBOUNCE_DELAY - Delay for search input debouncing in ms.
+     */
     const METADATA_OPFS_FILENAME = 'novelsMetadata.json';
     const THEME_KEY = 'novelReaderTheme_v2';
     const FONT_KEY = 'novelReaderFont_v2';
@@ -347,6 +362,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const MODAL_ANIMATION_DURATION = 200;
     const SEARCH_DEBOUNCE_DELAY = 250;
 
+    /**
+     * @type {string|null} currentNovelId - The ID of the currently viewed novel.
+     * @type {number} currentChapterIndex - The index of the currently read chapter.
+     * @type {string} chapterSortOrder - The current sort order for chapters ('asc' or 'desc').
+     * @type {Array<object>} novelsMetadata - In-memory array of all novel metadata.
+     * @type {FileSystemDirectoryHandle|null} opfsRoot - The root handle for the Origin Private File System.
+     * @type {string|null} newCoverData - Holds base64 data for a new cover image before saving.
+     * @type {string} coverAction - Tracks the pending action for a cover image ('none', 'update', 'delete').
+     */
     let currentNovelId = null;
     let currentChapterIndex = -1;
     let chapterSortOrder = 'asc';
@@ -355,13 +379,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let newCoverData = null;
     let coverAction = 'none';
 
+    /**
+     * @constant {object} DOM - A collection of frequently accessed DOM elements.
+     */
     const doc = document;
     const DOM = {
         appTitleEl: doc.querySelector('title[data-i18n-key="app_title"]'),
         pages: doc.querySelectorAll('.page'),
         homePage: doc.getElementById('home-page'),
+        novelInfoPage: doc.getElementById('novel-info-page'),
         readerPage: doc.getElementById('reader-page'),
         themeToggleBtn: doc.getElementById('theme-toggle-btn'),
+        moreActionsBtn: doc.getElementById('more-actions-btn'),
+        headerMenu: doc.getElementById('header-menu'),
         languageSelect: doc.getElementById('language-select'),
         novelListEl: doc.getElementById('novel-list'),
         novelSearchInput: doc.getElementById('novel-search'),
@@ -411,8 +441,21 @@ document.addEventListener('DOMContentLoaded', () => {
         novelModalCoverPreviewWrapper: doc.querySelector('.modal-cover-preview-wrapper'),
         novelInfoCoverContainer: doc.getElementById('novel-info-cover-container'),
         novelInfoCoverImg: doc.getElementById('novel-info-cover-img'),
+        processingModal: doc.getElementById('processing-modal'),
+        processingModalText: doc.getElementById('processing-modal-text'),
+        novelInfoPageLoader: null,
+        novelInfoPageContent: null,
+        readerPageLoader: null,
+        readerPageContent: null,
     };
+    DOM.novelInfoPageLoader = DOM.novelInfoPage.querySelector('.page-loader');
+    DOM.novelInfoPageContent = DOM.novelInfoPage.querySelector('.page-content-wrapper');
+    DOM.readerPageLoader = DOM.readerPage.querySelector('.page-loader');
+    DOM.readerPageContent = DOM.readerPage.querySelector('.page-content-wrapper');
 
+    /**
+     * Handles internationalization (i18n) for the application.
+     */
     class I18nService {
         constructor(translationsData) {
             this.translationsData = translationsData;
@@ -445,6 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         translateElement(element) {
             const { i18nKey, i18nPlaceholder, i18nAriaLabel } = element.dataset;
+            // Special case for theme button which has dynamic text and must be updated
+            if (element.id === 'theme-toggle-btn') {
+            updateThemeToggleButtonText();
+                return;
+            }
             if (i18nKey) element.textContent = this.get(i18nKey);
             if (i18nPlaceholder) element.placeholder = this.get(i18nPlaceholder);
             if (i18nAriaLabel) element.setAttribute('aria-label', this.get(i18nAriaLabel));
@@ -453,8 +501,8 @@ document.addEventListener('DOMContentLoaded', () => {
             DOM.appTitleEl.textContent = this.get('app_title');
             rootElement.querySelectorAll('[data-i18n-key], [data-i18n-placeholder], [data-i18n-aria-label]')
                 .forEach(el => this.translateElement(el));
-            updateThemeToggleButtonAriaLabel();
-            updateFullscreenButtonAriaLabel();
+            
+           updateFullscreenButtonAriaLabel();
             populateLanguageSelector();
         }
         onLanguageChange(callback) { this.languageChangeListeners.push(callback); }
@@ -466,6 +514,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const i18n = new I18nService(ALL_TRANSLATIONS);
 
+    /**
+     * Creates a debounced function that delays invoking `func` until after `delay` milliseconds.
+     * @param {Function} func The function to debounce.
+     * @param {number} delay The number of milliseconds to delay.
+     * @returns {Function} The new debounced function.
+     */
     function debounce(func, delay) {
         let timeoutId;
         return function(...args) {
@@ -474,6 +528,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    /**
+     * Automatically adjusts the height of a textarea to fit its content.
+     * @param {HTMLTextAreaElement} textarea The textarea element to resize.
+     */
     function autoResizeTextarea(textarea) {
         if (!textarea) return;
         textarea.style.height = 'auto';
@@ -481,23 +539,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleTextareaInput(event) {
-        const textarea = event.target;
-        const modalContent = textarea.closest('.modal-content');
-        
-        autoResizeTextarea(textarea);
-
-        if (modalContent) {
-            modalContent.scrollTop = modalContent.scrollHeight;
-        }
+        autoResizeTextarea(event.target);
     }
 
+    /**
+     * Main application initialization function.
+     * Sets up service worker, OPFS, settings, and event listeners.
+     */
     async function initializeApp() {
         registerServiceWorker();
         if (!await initOPFS()) alert(i18n.get('alert_opfs_unavailable'));
         i18n.init();
         i18n.onLanguageChange(() => {
             if (DOM.homePage.classList.contains('active')) renderNovelList(DOM.novelSearchInput.value);
-            if (doc.getElementById('novel-info-page').classList.contains('active') && currentNovelId) loadNovelInfoPage(currentNovelId);
+            if (DOM.novelInfoPage.classList.contains('active') && currentNovelId) loadNovelInfoPage(currentNovelId);
         });
         loadSettings();
         await loadNovelsMetadata();
@@ -506,6 +561,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showPage('home-page');
     }
 
+    /**
+     * Registers the service worker for PWA functionality.
+     */
     function registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
@@ -513,6 +571,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Initializes the Origin Private File System (OPFS) root directory handle.
+     * @returns {Promise<boolean>} True if OPFS is available and initialized, false otherwise.
+     */
     async function initOPFS() {
         try {
             if (navigator.storage?.getDirectory) {
@@ -526,6 +588,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    /**
+     * Saves the reader's current chapter and scroll position.
+     */
     async function saveReaderPosition() {
         if (!DOM.readerPage.classList.contains('active') || !currentNovelId || currentChapterIndex < 0) return;
         const novel = findNovel(currentNovelId);
@@ -535,6 +600,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await saveNovelsMetadata();
     }
 
+    /**
+     * Switches the visible page in the application.
+     * @param {string} pageId The ID of the page to show.
+     */
     async function showPage(pageId) {
         if (doc.fullscreenElement && DOM.readerPage.classList.contains('active') && pageId !== 'reader-page') {
             if (doc.exitFullscreen) doc.exitFullscreen().catch(err => console.error("Error exiting fullscreen:", err));
@@ -554,10 +623,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (pageId !== 'home-page' && DOM.novelSearchInput) DOM.novelSearchInput.value = '';
         if (pageId !== 'novel-info-page' && DOM.chapterSearchInput) DOM.chapterSearchInput.value = '';
-        if (pageId === 'home-page') renderNovelList();
-        if (pageId === 'novel-info-page' && currentNovelId) loadNovelInfoPage(currentNovelId);
+        
+        // Trigger content loading for pages that require it
+        if (pageId === 'home-page') {
+            renderNovelList();
+        } else if (pageId === 'novel-info-page' && currentNovelId) {
+            loadNovelInfoPage(currentNovelId);
+        } else if (pageId === 'reader-page' && currentNovelId !== null && currentChapterIndex !== -1) {
+            loadReaderPage(currentNovelId, currentChapterIndex);
+        }
     }
 
+    /**
+     * Loads all user settings from localStorage and applies them.
+     */
     function loadSettings() {
         const theme = localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
         const font = localStorage.getItem(FONT_KEY) || DEFAULT_FONT;
@@ -568,7 +647,6 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.fontSelect.value = font;
         DOM.fontSizeSlider.value = fontSize;
         DOM.lineHeightSlider.value = lineSpacing;
-        updateThemeToggleButtonAriaLabel();
         DOM.fontSizeValueSpan.textContent = fontSize;
         DOM.lineHeightValueSpan.textContent = lineSpacing;
     }
@@ -578,13 +656,24 @@ document.addEventListener('DOMContentLoaded', () => {
         catch (error) { alert(i18n.get('alert_error_saving_setting', { key })); }
     }
 
-    function updateThemeToggleButtonAriaLabel() {
-        DOM.themeToggleBtn.setAttribute('aria-label', i18n.get(doc.body.classList.contains('dark-mode') ? 'theme_switch_light' : 'theme_switch_dark'));
+    /**
+     * Updates the theme toggle button's text and icon based on the current theme.
+     */
+    function updateThemeToggleButtonText() {
+        const isDark = doc.body.classList.contains('dark-mode');
+        const emoji = isDark ? '☀️' : '🌙';
+        const textKey = isDark ? 'theme_switch_light' : 'theme_switch_dark';
+        DOM.themeToggleBtn.innerHTML = `${emoji} <span>${i18n.get(textKey)}</span>`;
     }
 
+    /**
+     * Applies the selected theme (light/dark) to the application.
+     * @param {string} theme - The theme to apply ('light' or 'dark').
+     * @param {boolean} [save=true] - Whether to save the setting to localStorage.
+     */
     function applyTheme(theme, save = true) {
         doc.body.classList.toggle('dark-mode', theme === 'dark');
-        updateThemeToggleButtonAriaLabel();
+        updateThemeToggleButtonText();
         const metaLight = doc.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]');
         const metaDark = doc.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]');
         if (metaLight) metaLight.content = getComputedStyle(doc.documentElement).getPropertyValue(theme === 'dark' ? '--bg-primary-dark' : '--bg-primary-light').trim();
@@ -615,6 +704,9 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.languageSelect.value = i18n.currentLang;
     }
 
+    /**
+     * Loads the novels metadata array from the OPFS file.
+     */
     async function loadNovelsMetadata() {
         novelsMetadata = [];
         if (!opfsRoot) { return; }
@@ -644,6 +736,9 @@ document.addEventListener('DOMContentLoaded', () => {
         novelsMetadata.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? '', i18n.currentLang, { sensitivity: 'base' }));
     }
 
+    /**
+     * Saves the current `novelsMetadata` array to the OPFS file.
+     */
     async function saveNovelsMetadata() {
         if (!opfsRoot) { alert(i18n.get('alert_error_saving_metadata_opfs')); return; }
         try {
@@ -806,6 +901,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settingsCleared && opfsCompletelyCleared) alert(i18n.get('alert_delete_all_success'));
     }
 
+    /**
+     * Renders the list of novels on the home page, filtering by a search term.
+     * @param {string} [filterTerm=''] - The term to filter novels by.
+     */
     function renderNovelList(filterTerm = '') {
         DOM.novelListEl.innerHTML = '';
         const lowerFilter = filterTerm.toLowerCase().trim();
@@ -815,13 +914,15 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         const noNovels = novelsMetadata.length === 0;
         DOM.exportButton.disabled = noNovels;
-        DOM.exportButton.setAttribute('aria-disabled', String(noNovels));
 
         if (filtered.length === 0) {
-            const li = doc.createElement('li'); li.className = 'list-placeholder';
+            const li = doc.createElement('li');
+            li.className = 'list-placeholder';
             li.textContent = i18n.get(noNovels ? 'placeholder_no_novels' : 'placeholder_no_matching_novels', { searchTerm: filterTerm });
-            DOM.novelListEl.appendChild(li); return;
+            DOM.novelListEl.appendChild(li);
+            return;
         }
+
         const frag = doc.createDocumentFragment();
         filtered.forEach(novel => {
             const li = doc.createElement('li');
@@ -833,23 +934,70 @@ document.addEventListener('DOMContentLoaded', () => {
             li.setAttribute('aria-label', i18n.get('aria_open_novel', { title }));
 
             li.innerHTML = `
+                <div class="novel-card__cover">
+                    <img src="" alt="" class="novel-card__cover-img">
+                    <div class="novel-card__cover-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"></path></svg>
+                    </div>
+                </div>
                 <div class="novel-card__content">
                     <h3 class="novel-card__title"></h3>
                     <p class="novel-card__author"></p>
+                    <div class="novel-card__meta">
+                        <div class="novel-card__meta-item genre">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"></path></svg>
+                            <span></span>
+                        </div>
+                        <div class="novel-card__meta-item chapters">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h14V7H3v2zm0 4h14v-2H3v2zm0 4h14v-2H3v2zm16 0h2v-2h-2v2zm0-10v2h2V7h-2zm0 6h2v-2h-2v2z"></path></svg>
+                            <span></span>
+                        </div>
+                    </div>
                 </div>
-                <svg class="novel-card__chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
             `;
+
             li.querySelector('.novel-card__title').textContent = title;
             li.querySelector('.novel-card__author').textContent = novel.author || i18n.get('text_unknown_author');
+            
+            const genreEl = li.querySelector('.novel-card__meta-item.genre');
+            if (novel.genre) {
+                genreEl.querySelector('span').textContent = novel.genre;
+            } else {
+                genreEl.style.display = 'none';
+            }
+            
+            li.querySelector('.novel-card__meta-item.chapters span').textContent = i18n.get('text_card_chapters', { count: novel.chapters.length });
+
+            const coverImg = li.querySelector('.novel-card__cover-img');
+            const coverPlaceholder = li.querySelector('.novel-card__cover-placeholder');
+            if (novel.coverImageFileName) {
+                readCoverImage(novel.id, novel.coverImageFileName).then(data => {
+                    if (data) {
+                        coverImg.src = data;
+                        coverImg.alt = `Cover for ${title}`;
+                        coverImg.style.display = 'block';
+                        coverPlaceholder.style.display = 'none';
+                    }
+                });
+            }
+
             frag.appendChild(li);
         });
         DOM.novelListEl.appendChild(frag);
     }
 
+    /**
+     * Asynchronously loads and populates the novel info page.
+     * @param {string} novelId - The ID of the novel to load.
+     */
     async function loadNovelInfoPage(novelId) {
+        DOM.novelInfoPageLoader.classList.add('active');
+        DOM.novelInfoPageContent.classList.add('loading');
+
         const novel = findNovel(novelId);
         if (!novel) {
             alert(i18n.get('alert_error_finding_novel_info'));
+            DOM.novelInfoPageLoader.classList.remove('active');
             showPage('home-page');
             return;
         }
@@ -885,13 +1033,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const handler = (e) => {
                 if (e.type==='click'||(e.type==='keydown'&&(e.key==='Enter'||e.key===' '))) {
                     e.preventDefault(); currentChapterIndex = lastReadIdx;
-                    loadReaderPage(currentNovelId, currentChapterIndex).then(() => showPage('reader-page'));
+                    showPage('reader-page');
                 }
             };
             DOM.novelInfoLastReadEl.addEventListener('click', handler); DOM.novelInfoLastReadEl.addEventListener('keydown', handler);
         } else { DOM.novelInfoLastReadEl.textContent = i18n.get('details_never_read'); DOM.novelInfoLastReadEl.classList.add('not-clickable'); }
 
         renderChapterList(novelId, DOM.chapterSearchInput ? DOM.chapterSearchInput.value : '');
+
+        DOM.novelInfoPageLoader.classList.remove('active');
+        DOM.novelInfoPageContent.classList.remove('loading');
     }
 
     function formatTimestamp(isoString) {
@@ -966,39 +1117,56 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.chapterListEl.appendChild(frag);
     }
 
+    /**
+     * Asynchronously loads and populates the reader page for a specific chapter.
+     * @param {string} novelId - The ID of the novel containing the chapter.
+     * @param {number} chapterIndexToLoad - The index of the chapter to load.
+     */
     async function loadReaderPage(novelId, chapterIndexToLoad) {
-        const novel = findNovel(novelId); const chapter = findChapter(novelId, chapterIndexToLoad);
+        DOM.readerPageLoader.classList.add('active');
+        DOM.readerPageContent.classList.add('loading');
+
+        const novel = findNovel(novelId);
+        const chapter = findChapter(novelId, chapterIndexToLoad);
+
         if (!chapter || !novel) {
             DOM.readerChapterTitleEl.textContent = i18n.get('text_error_formatting_timestamp');
             DOM.readerWordCountEl.textContent = '';
             DOM.readerContentEl.textContent = i18n.get('text_error_loading_chapter');
-            DOM.prevChapterBtn.disabled = true; DOM.prevChapterBtn.setAttribute('aria-disabled', 'true');
-            DOM.nextChapterBtn.disabled = true; DOM.nextChapterBtn.setAttribute('aria-disabled', 'true');
+            DOM.prevChapterBtn.disabled = true;
+            DOM.nextChapterBtn.disabled = true;
+            DOM.readerPageLoader.classList.remove('active');
+            DOM.readerPageContent.classList.remove('loading');
             return;
         }
+
         currentChapterIndex = chapterIndexToLoad;
         DOM.readerChapterTitleEl.textContent = chapter.title ?? i18n.get('text_chapter_placeholder', { index: currentChapterIndex + 1 });
-        if (typeof chapter.wordCount !== 'undefined') {
-            DOM.readerWordCountEl.textContent = i18n.get('text_word_count', { count: chapter.wordCount });
-        } else {
-            DOM.readerWordCountEl.textContent = i18n.get('text_word_count_na');
-        }
+        DOM.readerWordCountEl.textContent = typeof chapter.wordCount !== 'undefined'
+            ? i18n.get('text_word_count', { count: chapter.wordCount })
+            : i18n.get('text_word_count_na');
 
-        DOM.readerContentEl.textContent = i18n.get('text_loading_chapter_content'); DOM.readerContentEl.style.color = '';
+        DOM.readerContentEl.textContent = i18n.get('text_loading_chapter_content');
+        DOM.readerContentEl.style.color = '';
         DOM.readerMainContent.scrollTop = 0;
+
         const rawContent = await readChapterContent(novelId, currentChapterIndex);
         if (rawContent.startsWith(i18n.get('text_error_prefix'))) {
-            DOM.readerContentEl.textContent = rawContent; DOM.readerContentEl.style.color = 'var(--color-accent-danger)';
-        } else DOM.readerContentEl.textContent = rawContent;
+            DOM.readerContentEl.textContent = rawContent;
+            DOM.readerContentEl.style.color = 'var(--color-accent-danger)';
+        } else {
+            DOM.readerContentEl.textContent = rawContent;
+        }
+
         DOM.prevChapterBtn.disabled = (currentChapterIndex <= 0);
-        DOM.prevChapterBtn.setAttribute('aria-disabled', String(DOM.prevChapterBtn.disabled));
         DOM.nextChapterBtn.disabled = (currentChapterIndex >= novel.chapters.length - 1);
-        DOM.nextChapterBtn.setAttribute('aria-disabled', String(DOM.nextChapterBtn.disabled));
+        
         requestAnimationFrame(() => {
-            if (DOM.readerPage.classList.contains('active') && currentNovelId === novelId &&
-                currentChapterIndex === novel.lastReadChapterIndex) {
+            if (DOM.readerPage.classList.contains('active') && currentNovelId === novelId && currentChapterIndex === novel.lastReadChapterIndex) {
                 DOM.readerMainContent.scrollTop = novel.lastReadScrollTop;
             }
+            DOM.readerPageLoader.classList.remove('active');
+            DOM.readerPageContent.classList.remove('loading');
         });
     }
 
@@ -1012,6 +1180,23 @@ document.addEventListener('DOMContentLoaded', () => {
         modalEl.style.display = 'flex';
         const focusable = modalEl.querySelector('input:not([type="hidden"]), textarea, select, button');
         if (focusable) focusable.focus();
+    }
+
+    /**
+     * Shows a processing modal for long-running tasks like import/export.
+     * @param {('importing'|'exporting')} type - The type of process.
+     */
+    function showProcessingModal(type) {
+        const key = type === 'importing' ? 'aria_importing_backup' : 'aria_exporting_novels';
+        DOM.processingModalText.textContent = i18n.get(key);
+        DOM.processingModal.style.display = 'flex';
+    }
+
+    /**
+     * Hides the processing modal.
+     */
+    function hideProcessingModal() {
+        DOM.processingModal.style.display = 'none';
     }
 
     async function openNovelModal(novelIdToEdit = null) {
@@ -1095,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeNovelModal();
         renderNovelList(DOM.novelSearchInput ? DOM.novelSearchInput.value : '');
 
-        if (doc.getElementById('novel-info-page').classList.contains('active') && currentNovelId === novelToUpdate.id) {
+        if (DOM.novelInfoPage.classList.contains('active') && currentNovelId === novelToUpdate.id) {
             loadNovelInfoPage(novelToUpdate.id);
         } else if (!isEditing && currentNovelId === novelToUpdate.id) {
             await showPage('novel-info-page');
@@ -1182,9 +1367,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function exportAllData() {
         if (!novelsMetadata?.length) { alert(i18n.get('alert_no_novels_to_export')); return; }
         if (!opfsRoot || typeof CompressionStream === 'undefined') { alert(i18n.get('alert_export_failed_apis')); return; }
-        const origAria = DOM.exportButton.getAttribute('aria-label');
-        DOM.exportButton.disabled = true; DOM.exportButton.setAttribute('aria-label', i18n.get('aria_exporting_novels'));
+        
+        DOM.exportButton.disabled = true;
         try {
+            showProcessingModal('exporting');
             const exportMeta = JSON.parse(JSON.stringify(novelsMetadata));
             const exportObj = { version: 2, metadata: exportMeta, chapters: {}, covers: {} };
             let chReadErrors = 0;
@@ -1217,8 +1403,8 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(i18n.get('alert_export_complete'));
         } catch (error) { alert(i18n.get('alert_export_failed', { errorMessage: error.message }));
         } finally {
+            hideProcessingModal();
             DOM.exportButton.disabled = novelsMetadata.length === 0;
-            DOM.exportButton.setAttribute('aria-label', origAria || i18n.get('aria_export_all'));
         }
     }
 
@@ -1231,11 +1417,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function importData(file) {
         if (!file || !file.name.endsWith('.novelarchive.gz')) { alert(i18n.get('alert_invalid_import_file')); DOM.importFileInput.value = ''; return; }
         if (!opfsRoot) { alert(i18n.get('alert_import_failed_storage_not_ready')); DOM.importFileInput.value = ''; return; }
-        const origAria = DOM.importButton.getAttribute('aria-label');
-        DOM.importButton.disabled = true; DOM.importFileInput.disabled = true;
-        DOM.importButton.setAttribute('aria-label', i18n.get('aria_importing_backup'));
+        
+        DOM.importButton.disabled = true;
+        DOM.importFileInput.disabled = true;
         let prevSettingsBackup = null;
         try {
+            showProcessingModal('importing');
             prevSettingsBackup = { theme:localStorage.getItem(THEME_KEY), font:localStorage.getItem(FONT_KEY), fontSize:localStorage.getItem(FONT_SIZE_KEY), lineSpacing:localStorage.getItem(LINE_SPACING_KEY), language:localStorage.getItem(LANG_KEY) };
             let opfsClearFailed = false; const entries = [];
             for await (const entry of opfsRoot.values()) if (entry.kind === 'directory' || entry.name === METADATA_OPFS_FILENAME) entries.push({name:entry.name, kind:entry.kind});
@@ -1298,9 +1485,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (rbErr) { alert(i18n.get('alert_rollback_failed')); }
             } else alert(i18n.get('alert_rollback_failed_no_backup'));
         } finally {
+            hideProcessingModal();
             DOM.importButton.disabled = false;
             DOM.importFileInput.disabled = false; DOM.importFileInput.value = '';
-            DOM.importButton.setAttribute('aria-label', origAria || i18n.get('aria_import_archive'));
         }
     }
 
@@ -1380,15 +1567,29 @@ document.addEventListener('DOMContentLoaded', () => {
          DOM.readerFullscreenBtn.setAttribute('aria-label', i18n.get(doc.fullscreenElement ? 'aria_exit_fullscreen' : 'aria_enter_fullscreen'));
     }
 
+    /**
+     * Sets up all the primary event listeners for the application.
+     */
     function setupEventListeners() {
         doc.querySelectorAll('.back-btn').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.target || 'home-page')));
-        doc.getElementById('settings-btn')?.addEventListener('click', () => showPage('settings-page'));
+        doc.getElementById('settings-btn')?.addEventListener('click', () => { showPage('settings-page'); DOM.headerMenu.classList.remove('active'); });
         DOM.themeToggleBtn?.addEventListener('click', () => applyTheme(doc.body.classList.contains('dark-mode') ? 'light' : 'dark'));
         DOM.languageSelect?.addEventListener('change', (e) => i18n.setLanguage(e.target.value));
         doc.getElementById('add-novel-btn')?.addEventListener('click', () => openNovelModal());
-        DOM.importButton?.addEventListener('click', triggerImport);
+        DOM.importButton?.addEventListener('click', () => { triggerImport(); DOM.headerMenu.classList.remove('active'); });
         DOM.importFileInput?.addEventListener('change', (e) => { if (e.target.files?.length) importData(e.target.files[0]); });
-        DOM.exportButton?.addEventListener('click', exportAllData);
+        DOM.exportButton?.addEventListener('click', () => { exportAllData(); DOM.headerMenu.classList.remove('active'); });
+        
+        DOM.moreActionsBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            DOM.headerMenu.classList.toggle('active');
+        });
+        doc.addEventListener('click', (e) => {
+            if (!DOM.headerMenu.contains(e.target) && !DOM.moreActionsBtn.contains(e.target)) {
+                DOM.headerMenu.classList.remove('active');
+            }
+        });
+
         const debouncedRenderNovels = debounce(renderNovelList, SEARCH_DEBOUNCE_DELAY);
         DOM.novelSearchInput?.addEventListener('input', (e) => debouncedRenderNovels(e.target.value));
         DOM.deleteAllDataBtn?.addEventListener('click', deleteAllData);
@@ -1426,11 +1627,17 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.addEventListener('fullscreenchange', updateFullscreenButtonAriaLabel);
         DOM.prevChapterBtn?.addEventListener('click', async () => {
             await saveReaderPosition();
-            if (currentNovelId && currentChapterIndex > 0) await loadReaderPage(currentNovelId, currentChapterIndex - 1);
+            if (currentNovelId && currentChapterIndex > 0) {
+                currentChapterIndex--;
+                showPage('reader-page');
+            }
         });
         DOM.nextChapterBtn?.addEventListener('click', async () => {
             await saveReaderPosition(); const novel = findNovel(currentNovelId);
-            if (novel && currentChapterIndex < novel.chapters.length - 1) await loadReaderPage(currentNovelId, currentChapterIndex + 1);
+            if (novel && currentChapterIndex < novel.chapters.length - 1) {
+                currentChapterIndex++;
+                showPage('reader-page');
+            }
         });
         DOM.fontSelect?.addEventListener('change', (e) => applyReaderStyles(e.target.value, DOM.fontSizeSlider.value, DOM.lineHeightSlider.value));
         DOM.fontSizeSlider?.addEventListener('input', (e) => applyReaderStyles(DOM.fontSelect.value, e.target.value, DOM.lineHeightSlider.value));
@@ -1438,6 +1645,7 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (doc.fullscreenElement) doc.exitFullscreen().catch(console.warn);
+                else if (DOM.headerMenu?.classList.contains('active')) DOM.headerMenu.classList.remove('active');
                 else if (DOM.readerSettingsModal?.style.display !== 'none') closeReaderSettingsModal();
                 else if (DOM.chapterModal?.style.display !== 'none') closeChapterModal();
                 else if (DOM.novelModal?.style.display !== 'none') closeNovelModal();
@@ -1479,7 +1687,6 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (action) {
                 case 'read':
                     currentChapterIndex = chapterIndex;
-                    await loadReaderPage(currentNovelId, currentChapterIndex);
                     showPage('reader-page');
                     break;
                 case 'edit':
@@ -1537,5 +1744,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.chapterModalContentInput?.addEventListener('input', handleTextareaInput);
     }
 
+    // Start the application
+    // Good luck!
     initializeApp();
 });
